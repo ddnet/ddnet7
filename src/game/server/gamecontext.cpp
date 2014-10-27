@@ -895,7 +895,7 @@ void CGameContext::ProgressVoteOptions(int ClientID)
 	dbg_assert(pPl->m_SendVoteIndex <= m_NumVoteOptions, "m_SendVoteIndex invalid");
 
 	int VotesLeft = m_NumVoteOptions - pPl->m_SendVoteIndex;
-	int NumVotesToSend = min(g_Config.m_SvVotesPerTick, VotesLeft);
+	int NumVotesToSend = min(g_Config.m_SvSendVotesPerTick, VotesLeft);
 
 	if (!VotesLeft)
 	{
