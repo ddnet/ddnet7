@@ -40,8 +40,10 @@ public:
 	virtual void RestrictRconOutput(int ClientID) = 0;
 
 	// DDrace
+
 	virtual void GetClientAddr(int ClientID, NETADDR* pAddr) = 0;
 	virtual const char* GetAnnouncementLine(char const* FileName) = 0;
+	virtual bool DnsblWhite(int ClientID) = 0;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID) = 0;
 
