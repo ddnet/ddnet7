@@ -1839,6 +1839,34 @@ void CServer::ConStatus(IConsole::IResult *pResult, void *pUser)
 	}
 }
 
+void CServer::ConDnsblStatus(IConsole::IResult *pResult, void *pUser)
+{
+	// dump blacklisted clients
+	char aBuf[1024];
+	char aAddrStr[NETADDR_MAXSTRSIZE];
+	CServer* pThis = static_cast<CServer *>(pUser);
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(pThis->m_aClients[i].m_State != CClient::STATE_EMPTY &&
+				pThis->m_aClients[i].m_DnsblState == CClient::DNSBL_STATE_BLACKLISTED)
+		{
+			net_addr_str(pThis->m_NetServer.ClientAddr(i), aAddrStr, sizeof(aAddrStr), true);
+			if(pThis->m_aClients[i].m_State == CClient::STATE_INGAME)
+			{
+				const char *pAuthStr = pThis->m_aClients[i].m_Authed == CServer::AUTHED_ADMIN ? "(Admin)" :
+										pThis->m_aClients[i].m_Authed == CServer::AUTHED_MOD ? "(Mod)" :
+										pThis->m_aClients[i].m_Authed == CServer::AUTHED_HELPER ? "(Helper)" : "";
+				str_format(aBuf, sizeof(aBuf), "id=%d addr=%s name='%s' score=%d client=%d secure=%s %s", i, aAddrStr,
+					pThis->m_aClients[i].m_aName, pThis->m_aClients[i].m_Score, ((CGameContext *)(pThis->GameServer()))->m_apPlayers[i]->m_ClientVersion, pThis->m_NetServer.HasSecurityToken(i) ? "yes":"no", pAuthStr);
+			}
+			else
+				str_format(aBuf, sizeof(aBuf), "id=%d addr=%s connecting", i, aAddrStr);
+			pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Server", aBuf);
+		}
+	}
+}
+
 void CServer::ConShutdown(IConsole::IResult *pResult, void *pUser)
 {
 	((CServer *)pUser)->m_RunServer = 0;
@@ -2323,6 +2351,8 @@ void CServer::RegisterCommands()
 	Console()->Register("auth_change_p", "s[ident] s[level] s[hash] s[salt]", CFGFLAG_SERVER|CFGFLAG_NONTEEHISTORIC, ConAuthUpdateHashed, this, "Update a rcon key with prehashed data");
 	Console()->Register("auth_remove", "s[ident]", CFGFLAG_SERVER|CFGFLAG_NONTEEHISTORIC, ConAuthRemove, this, "Remove a rcon key");
 	Console()->Register("auth_list", "", CFGFLAG_SERVER, ConAuthList, this, "List all rcon keys");
+
+	Console()->Register("dnsbl_status", "", CFGFLAG_SERVER, ConDnsblStatus, this, "List blacklisted players");
 
 	Console()->Chain("sv_name", ConchainSpecialInfoupdate, this);
 	Console()->Chain("password", ConchainSpecialInfoupdate, this);
