@@ -703,7 +703,7 @@ void CGameContext::OnTick()
 						continue;
 
 					// don't count votes by blacklisted clients
-					if (!m_pServer->DnsblWhite(i))
+					if (g_Config.m_SvDnsblVote && !m_pServer->DnsblWhite(i))
 						continue;
 
 					int ActVote = m_apPlayers[i]->m_Vote;
@@ -1200,7 +1200,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			int64 Now = Server()->Tick();
 			int64 TickSpeed = Server()->TickSpeed();
 
-			if (!m_pServer->DnsblWhite(ClientID))
+			if (g_Config.m_SvDnsblVote && !m_pServer->DnsblWhite(ClientID))
 			{
 				// blacklisted by dnsbl
 				SendChatTarget(ClientID, "You are not allowed to vote due to DNSBL");
