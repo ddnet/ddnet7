@@ -30,6 +30,7 @@ map_version*
 mastersrv*
 packetgen*
 testrunner
+uuid*
 versionsrv*
 
 # IDE project files

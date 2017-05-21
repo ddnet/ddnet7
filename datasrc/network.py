@@ -24,6 +24,7 @@ GameMsgIDs = Enum("GAMEMSG", ["TEAM_SWAP", "SPEC_INVALIDID", "TEAM_SHUFFLE", "TE
 RawHeader = '''
 
 #include <engine/message.h>
+#include <engine/shared/protocol_ex.h>
 
 enum
 {
@@ -223,6 +224,10 @@ Objects = [
 		NetArray(NetIntAny("m_aTuneParams"), 32),
 	]),
 
+	NetObjectEx("MyOwnObject", "my-own-object@heinrich5991.de", [
+		NetIntAny("m_Test"),
+	]),
+
 	## Events
 
 	NetEvent("Common", [
@@ -249,6 +254,10 @@ Objects = [
 		NetIntRange("m_HealthAmount", 0, 9),
 		NetIntRange("m_ArmorAmount", 0, 9),
 		NetBool("m_Self"),
+	]),
+
+	NetObjectEx("MyOwnEvent", "my-own-event@heinrich5991.de", [
+		NetIntAny("m_Test"),
 	]),
 ]
 
@@ -433,5 +442,10 @@ Messages = [
 		NetArray(NetStringStrict("m_apSkinPartNames"), 6),
 		NetArray(NetBool("m_aUseCustomColors"), 6),
 		NetArray(NetIntAny("m_aSkinPartColors"), 6),
+	]),
+	# Can't add any NetMessages here!
+
+	NetMessageEx("Sv_MyOwnMessage", "my-own-message@heinrich5991.de", [
+		NetIntAny("m_Test"),
 	]),
 ]
