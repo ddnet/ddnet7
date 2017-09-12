@@ -48,6 +48,10 @@ void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *) pUserData;
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
 			"DDraceNetwork Mod. Version: " GAME_VERSION);
+#if defined(GIT_SHORTREV_HASH)
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
+			"Git revision hash: " GIT_SHORTREV_HASH);
+#endif
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
 			"Official site: DDNet.tw");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
