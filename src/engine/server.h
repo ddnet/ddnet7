@@ -2,6 +2,9 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #ifndef ENGINE_SERVER_H
 #define ENGINE_SERVER_H
+
+#include <base/hash.h>
+
 #include "kernel.h"
 #include "message.h"
 
@@ -45,6 +48,8 @@ public:
 		return SendMsg(&Packer, Flags, ClientID);
 	}
 
+	virtual void GetMapInfo(char *pMapName, int MapNameSize, int *pMapSize, SHA256_DIGEST *pSha256, int *pMapCrc) = 0;
+
 	virtual void SetClientName(int ClientID, char const *pName) = 0;
 	virtual void SetClientClan(int ClientID, char const *pClan) = 0;
 	virtual void SetClientCountry(int ClientID, int Country) = 0;
@@ -62,7 +67,8 @@ public:
 		RCON_CID_VOTE=-2,
 	};
 	virtual void SetRconCID(int ClientID) = 0;
-	virtual bool IsAuthed(int ClientID) const = 0;
+	virtual int IsAuthed(int ClientID) const = 0;
+	virtual const char *AuthName(int ClientID) const = 0;
 	virtual bool IsBanned(int ClientID) = 0;
 	virtual void Kick(int ClientID, const char *pReason) = 0;
 
@@ -89,6 +95,7 @@ public:
 	virtual void OnClientConnected(int ClientID, bool AsSpec) = 0;
 	virtual void OnClientEnter(int ClientID) = 0;
 	virtual void OnClientDrop(int ClientID, const char *pReason) = 0;
+	virtual void OnClientAuth(int ClientID, int Level) = 0;
 	virtual void OnClientDirectInput(int ClientID, void *pInput) = 0;
 	virtual void OnClientPredictedInput(int ClientID, void *pInput) = 0;
 
@@ -101,6 +108,9 @@ public:
 	virtual const char *NetVersion() const = 0;
 	virtual const char *NetVersionHashUsed() const = 0;
 	virtual const char *NetVersionHashReal() const = 0;
+
+	virtual void OnClientEngineJoin(int ClientID) = 0;
+	virtual void OnClientEngineDrop(int ClientID, const char *pReason) = 0;
 };
 
 extern IGameServer *CreateGameServer();

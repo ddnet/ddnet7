@@ -3,6 +3,7 @@
 #ifndef ENGINE_SERVER_SERVER_H
 #define ENGINE_SERVER_SERVER_H
 
+#include <base/hash.h>
 #include <engine/server.h>
 #include <engine/shared/memheap.h>
 
@@ -215,8 +216,10 @@ public:
 	void InitRconPasswordIfUnset();
 
 	void SetRconCID(int ClientID);
-	bool IsAuthed(int ClientID) const;
+	int IsAuthed(int ClientID) const;
+	const char *AuthName(int ClientID) const;
 	bool IsBanned(int ClientID);
+	void GetMapInfo(char *pMapName, int MapNameSize, int *pMapSize, SHA256_DIGEST *pMapSha256, int *pMapCrc);
 	int GetClientInfo(int ClientID, CClientInfo *pInfo) const;
 	void GetClientAddr(int ClientID, char *pAddrStr, int Size) const;
 	int GetClientVersion(int ClientID) const;

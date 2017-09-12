@@ -1264,6 +1264,9 @@ set_src(ENGINE_SHARED GLOB src/engine/shared
   snapshot.cpp
   snapshot.h
   storage.cpp
+  teehistorian_ex.cpp
+  teehistorian_ex.h
+  teehistorian_ex_chunks.h
   uuid_manager.cpp
   uuid_manager.h
 )
@@ -1535,6 +1538,8 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gameworld.h
   player.cpp
   player.h
+  teehistorian.cpp
+  teehistorian.h
 )
 set(GAME_GENERATED_SERVER
   src/generated/server_data.cpp
@@ -1634,13 +1639,19 @@ if(GTEST_FOUND OR DOWNLOAD_GTEST)
     hash.cpp
     storage.cpp
     str.cpp
+    teehistorian.cpp
     test.cpp
     test.h
     thread.cpp
   )
+  set(TESTS_EXTRA
+    src/game/server/teehistorian.cpp
+    src/game/server/teehistorian.h
+  )
   set(TARGET_TESTRUNNER testrunner)
   add_executable(${TARGET_TESTRUNNER} EXCLUDE_FROM_ALL
     ${TESTS}
+    ${TESTS_EXTRA}
     $<TARGET_OBJECTS:engine-shared>
     $<TARGET_OBJECTS:game-shared>
     ${DEPS}
