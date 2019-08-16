@@ -9,7 +9,7 @@
 CGameControllerDDrace::CGameControllerDDrace(class CGameContext *pGameServer) :
 		IGameController(pGameServer), m_Teams(pGameServer)
 {
-	m_pGameType = "F-DDrace";
+	m_pGameType = "DDraceNetwork";
 
 	InitTeleporter();
 }
