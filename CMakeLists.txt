@@ -1205,6 +1205,8 @@ set_src(ENGINE_SHARED GLOB src/engine/shared
   econ.cpp
   econ.h
   engine.cpp
+  fifo.cpp
+  fifo.h
   filecollection.cpp
   filecollection.h
   huffman.cpp
