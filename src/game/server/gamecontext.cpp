@@ -1044,7 +1044,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			int Mode = pMsg->m_Mode;
 			if((g_Config.m_SvTournamentMode == 2) &&
 				pPlayer->GetTeam() == TEAM_SPECTATORS &&
-				!Server()->IsAuthed(ClientID))
+				!Server()->GetAuthedState(ClientID))
 			{
 				if(Mode != CHAT_WHISPER)
 					Mode = CHAT_TEAM;
@@ -1058,9 +1058,9 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				Server()->RestrictRconOutput(ClientID);
 				Console()->SetFlagMask(CFGFLAG_CHAT);
 
-				int Authed = Server()->IsAuthed(ClientID);
+				int Authed = Server()->GetAuthedState(ClientID);
 				if (Authed)
-					Console()->SetAccessLevel(Authed == 2 ? IConsole::ACCESS_LEVEL_ADMIN : IConsole::ACCESS_LEVEL_MOD);
+					Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : IConsole::ACCESS_LEVEL_MOD);
 				else
 					Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_USER);
 				Console()->SetPrintOutputLevel(m_ChatPrintCBIndex, 0);
@@ -1087,7 +1087,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(pMsg->m_Force)
 			{
-				if(!Server()->IsAuthed(ClientID))
+				if(!Server()->GetAuthedState(ClientID))
 					return;
 			}
 			else
@@ -1108,7 +1108,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(str_comp_nocase(pMsg->m_Type, "option") == 0)
 			{
-				int Authed = Server()->IsAuthed(ClientID);
+				int Authed = Server()->GetAuthedState(ClientID);
 				CVoteOptionServer *pOption = m_pVoteOptionFirst;
 				while(pOption)
 				{
@@ -1147,7 +1147,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 
 				int KickID = str_toint(pMsg->m_Value);
-				if(KickID < 0 || KickID >= MAX_CLIENTS || !m_apPlayers[KickID] || KickID == ClientID || Server()->IsAuthed(KickID))
+				if(KickID < 0 || KickID >= MAX_CLIENTS || !m_apPlayers[KickID] || KickID == ClientID || Server()->GetAuthedState(KickID))
 					return;
 
 				str_format(aDesc, sizeof(aDesc), "%2d: %s", KickID, Server()->ClientName(KickID));
@@ -1204,6 +1204,34 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						return;
 					}
 				}
+
+				if (KickID < 0 || KickID >= MAX_CLIENTS || !m_apPlayers[KickID])
+				{
+					SendChatTarget(ClientID, "Invalid client id to kick");
+					return;
+				}
+				if (KickID == ClientID)
+				{
+					SendChatTarget(ClientID, "You can't kick yourself");
+					return;
+				}
+				int KickedAuthed = Server()->GetAuthedState(KickID);
+				if (KickedAuthed > Server()->GetAuthedState(ClientID))
+				{
+					SendChatTarget(ClientID, "You can't kick authorized players");
+					char aBufKick[128];
+					str_format(aBufKick, sizeof(aBufKick), "'%s' called for vote to kick you", Server()->ClientName(ClientID));
+					SendChatTarget(KickID, aBufKick);
+					return;
+				}
+
+				// Don't allow kicking if a player has no character
+				if (!GetPlayerChar(ClientID) || !GetPlayerChar(KickID) || GetDDRaceTeam(ClientID) != GetDDRaceTeam(KickID))
+				{
+					SendChatTarget(ClientID, "You can kick only your team member");
+					return;
+				}
+
 				m_VoteType = VOTE_START_KICK;
 				m_VoteClientID = KickID;
 			}
@@ -2058,7 +2086,7 @@ void CGameContext::OnInit()
 
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			int Level = Server()->IsAuthed(i);
+			int Level = Server()->GetAuthedState(i);
 			if(Level)
 			{
 				m_TeeHistorian.RecordAuthInitial(i, Level, Server()->AuthName(i));

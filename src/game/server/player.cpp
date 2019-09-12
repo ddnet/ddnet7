@@ -249,7 +249,7 @@ void CPlayer::Snap(int SnappingClient)
 		return;
 
 	pPlayerInfo->m_PlayerFlags = m_PlayerFlags&PLAYERFLAG_CHATTING;
-	if(Server()->IsAuthed(m_ClientID))
+	if(Server()->GetAuthedState(m_ClientID))
 		pPlayerInfo->m_PlayerFlags |= PLAYERFLAG_ADMIN;
 	if(m_IsReadyToPlay)
 		pPlayerInfo->m_PlayerFlags |= PLAYERFLAG_READY;
@@ -604,7 +604,7 @@ bool CPlayer::AfkTimer(int NewTargetX, int NewTargetY)
 		returns true if kicked
 	*/
 
-	if (Server()->IsAuthed(m_ClientID))
+	if (Server()->GetAuthedState(m_ClientID))
 		return false; // don't kick admins
 	if (g_Config.m_SvMaxAfkTime == 0)
 		return false; // 0 = disabled

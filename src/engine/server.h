@@ -8,6 +8,8 @@
 #include "kernel.h"
 #include "message.h"
 
+#include <generated/protocol.h>
+
 class IServer : public IInterface
 {
 	MACRO_INTERFACE("server", 0)
@@ -71,8 +73,8 @@ public:
 		RCON_CID_VOTE=-2,
 	};
 	virtual void SetRconCID(int ClientID) = 0;
-	virtual int IsAuthed(int ClientID) const = 0;
 	virtual const char *AuthName(int ClientID) const = 0;
+	virtual int GetAuthedState(int ClientID) const = 0;
 	virtual bool IsBanned(int ClientID) = 0;
 	virtual void Kick(int ClientID, const char *pReason) = 0;
 
