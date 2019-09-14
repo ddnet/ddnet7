@@ -269,16 +269,24 @@ void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *p
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	else if(Mode == CHAT_TEAM)
 	{
+		CTeamsCore* Teams = &((CGameControllerDDrace*)m_pController)->m_Teams.m_Core;
 		// pack one for the recording only
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NOSEND, -1);
-
-		To = m_apPlayers[ChatterClientID]->GetTeam();
 
 		// send to the clients
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			if(m_apPlayers[i] && m_apPlayers[i]->GetTeam() == To)
-				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+			if(m_apPlayers[i] != 0) {
+				if(m_apPlayers[ChatterClientID]->GetTeam() == TEAM_SPECTATORS) {
+					if(m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS) {
+						Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+					}
+				} else {
+					if(Teams->Team(i) == GetDDRaceTeam(ChatterClientID) && m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS) {
+						Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+					}
+				}
+			}
 		}
 	}
 	else // Mode == CHAT_WHISPER
@@ -825,6 +833,8 @@ void CGameContext::OnClientTeamChange(int ClientID)
 
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
+	m_apPlayers[ClientID]->OnDisconnect();
+
 	AbortVoteOnDisconnect(ClientID);
 
 	// update clients on drop
