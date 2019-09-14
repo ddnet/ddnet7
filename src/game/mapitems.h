@@ -46,7 +46,7 @@ enum
 	ENTITY_WEAPON_GRENADE,
 	ENTITY_POWERUP_NINJA,
 	ENTITY_WEAPON_LASER,
-	//F-DDrace - Main Lasers
+	//DDrace - Main Lasers
 	ENTITY_LASER_FAST_CCW,
 	ENTITY_LASER_NORMAL_CCW,
 	ENTITY_LASER_SLOW_CCW,
@@ -54,7 +54,7 @@ enum
 	ENTITY_LASER_SLOW_CW,
 	ENTITY_LASER_NORMAL_CW,
 	ENTITY_LASER_FAST_CW,
-	//F-DDrace - Laser Modifiers
+	//DDrace - Laser Modifiers
 	ENTITY_LASER_SHORT,
 	ENTITY_LASER_MEDIUM,
 	ENTITY_LASER_LONG,
@@ -64,15 +64,15 @@ enum
 	ENTITY_LASER_O_SLOW,
 	ENTITY_LASER_O_NORMAL,
 	ENTITY_LASER_O_FAST,
-	//F-DDrace - Plasma
+	//DDrace - Plasma
 	ENTITY_PLASMAE = 29,
 	ENTITY_PLASMAF,
 	ENTITY_PLASMA,
 	ENTITY_PLASMAU,
-	//F-DDrace - Shotgun
+	//DDrace - Shotgun
 	ENTITY_CRAZY_SHOTGUN_EX,
 	ENTITY_CRAZY_SHOTGUN,
-	//F-DDrace - Draggers
+	//DDrace - Draggers
 	ENTITY_DRAGGER_WEAK = 42,
 	ENTITY_DRAGGER_NORMAL,
 	ENTITY_DRAGGER_STRONG,
@@ -314,7 +314,7 @@ struct CMapItemLayerTilemap
 
 	int m_aName[3];
 
-	// F-DDrace
+	// DDrace
 
 	int m_Tele;
 	int m_Speedup;
@@ -386,7 +386,7 @@ struct CMapItemEnvelope : public CMapItemEnvelope_v2
 	enum { CURRENT_VERSION=3 };
 };
 
-// F-DDrace
+// DDrace
 
 class CTeleTile
 {

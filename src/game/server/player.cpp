@@ -46,7 +46,7 @@ void CPlayer::Reset()
 	m_IsReadyToPlay = false;
 	m_WeakHookSpawn = false;
 
-	// F-DDrace
+	// DDrace
 
 	m_LastPlaytime = time_get();
 	m_Sent1stAfkWarning = 0;

@@ -41,7 +41,7 @@ private:
 	int m_StartTick;
 	bool m_Explosive;
 
-	// F-DDrace
+	// DDrace
 
 	int m_Bouncing;
 	bool m_Freeze;

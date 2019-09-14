@@ -137,7 +137,7 @@ public:
 	void ResetGame();
 	void StartRound();
 
-	// F-DDrace
+	// DDrace
 
 	float m_CurrentRecord;
 };

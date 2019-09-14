@@ -163,7 +163,7 @@ public:
 	*/
 	void Tick();
 
-	// F-DDrace
+	// DDrace
 
 	std::list<class CCharacter*> IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, vec2& NewPos, class CEntity* pNotThis, int CollideWith = -1);
 	void ReleaseHooked(int ClientID);

@@ -219,7 +219,7 @@ public:
 	void SetAccessLevel(int AccessLevel) { m_AccessLevel = clamp(AccessLevel, (int)(ACCESS_LEVEL_ADMIN), (int)(ACCESS_LEVEL_MOD)); }
 	void ResetServerGameSettings();
 
-	// F-DDrace
+	// DDrace
 
 	static void ConUserCommandStatus(IConsole::IResult* pResult, void* pUser);
 	void SetFlagMask(int FlagMask) { m_FlagMask = FlagMask; }

@@ -190,7 +190,7 @@ public:
 	void Write(CNetObj_CharacterCore *pObjCore);
 	void Quantize();
 
-	// F-DDrace
+	// DDrace
 
 	int m_Id;
 	bool m_pReset;

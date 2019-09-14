@@ -24,7 +24,7 @@ private:
 	int m_Subtype;
 	//int m_SpawnTick;
 
-	// F-DDrace
+	// DDrace
 
 	void Move();
 	vec2 m_Core;

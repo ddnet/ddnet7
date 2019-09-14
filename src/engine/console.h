@@ -50,7 +50,7 @@ public:
 		int NumArguments() const { return m_NumArgs; }
 		int m_ClientID;
 
-		// F-DDrace
+		// DDrace
 
 		virtual int GetVictim() = 0;
 	};

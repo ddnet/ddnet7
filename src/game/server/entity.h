@@ -140,7 +140,7 @@ public:
 
 	bool GameLayerClipped(vec2 CheckPos);
 
-	// F-DDrace
+	// DDrace
 
 	bool GetNearestAirPos(vec2 Pos, vec2 ColPos, vec2* pOutPos);
 	bool GetNearestAirPosPlayer(vec2 PlayerPos, vec2* OutPos);

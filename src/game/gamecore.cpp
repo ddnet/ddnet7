@@ -569,7 +569,7 @@ void CCharacterCore::Quantize()
 	Read(&Core);
 }
 
-// F-DDrace
+// DDrace
 
 bool CCharacterCore::IsRightTeam(int MapIndex)
 {
