@@ -212,6 +212,8 @@ public:
 	int64 m_LastMapVote;
 	void ForceVote(int EnforcerID, bool Success);
 
+	int GetPickupType(int Type, int Subtype);
+
 private:
 
 	bool m_VoteWillPass;

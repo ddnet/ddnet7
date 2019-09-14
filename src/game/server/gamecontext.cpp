@@ -2391,3 +2391,24 @@ void CGameContext::ForceVote(int EnforcerID, bool Success)
 	str_format(aBuf, sizeof(aBuf), "forcing vote %s", pOption);
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 }
+
+int CGameContext::GetPickupType(int Type, int Subtype)
+{
+	if (Type == POWERUP_NINJA)
+		return PICKUP_NINJA;
+	if (Type != POWERUP_WEAPON)
+		return Type;
+
+	switch (Subtype)
+	{
+	case WEAPON_SHOTGUN:
+		return PICKUP_SHOTGUN;
+	case WEAPON_GRENADE:
+		return PICKUP_GRENADE;
+	case WEAPON_LASER:
+		return PICKUP_LASER;
+	case WEAPON_NINJA:
+		return PICKUP_NINJA;
+	}
+	return Subtype;
+}

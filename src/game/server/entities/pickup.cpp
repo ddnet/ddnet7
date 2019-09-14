@@ -172,7 +172,7 @@ void CPickup::Snap(int SnappingClient)
 
 	pP->m_X = (int)m_Pos.x;
 	pP->m_Y = (int)m_Pos.y;
-	pP->m_Type = GetPickupType();
+	pP->m_Type = GameServer()->GetPickupType(m_Type, m_Subtype);
 }
 
 void CPickup::Move()
@@ -187,20 +187,4 @@ void CPickup::Move()
 		}
 		m_Pos += m_Core;
 	}
-}
-
-int CPickup::GetPickupType()
-{
-	switch (m_Subtype)
-	{
-	case WEAPON_SHOTGUN:
-		return PICKUP_SHOTGUN;
-	case WEAPON_GRENADE:
-		return PICKUP_GRENADE;
-	case WEAPON_LASER:
-		return PICKUP_LASER;
-	}
-
-	// health and armor
-	return m_Type;
 }
