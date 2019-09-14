@@ -741,7 +741,7 @@ void CPlayer::SpectatePlayerName(const char* pName)
 	{
 		if (i != m_ClientID && Server()->ClientIngame(i) && !str_comp(pName, Server()->ClientName(i)))
 		{
-			m_SpectatorID = i;
+			SetSpectatorID(SPEC_PLAYER, i);
 			return;
 		}
 	}
