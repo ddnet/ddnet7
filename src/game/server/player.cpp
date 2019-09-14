@@ -519,6 +519,16 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 			}
 		}
 	}
+
+	// notify clients
+	CNetMsg_Sv_Team Msg;
+	Msg.m_ClientID = m_ClientID;
+	Msg.m_Team = Team;
+	Msg.m_Silent = DoChatMsg ? 0 : 1;
+	Msg.m_CooldownTick = m_TeamChangeTick;
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+
+	GameServer()->OnClientTeamChange(m_ClientID);
 }
 
 void CPlayer::TryRespawn()

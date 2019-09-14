@@ -878,6 +878,7 @@ void CCharacter::Die(int Killer, int Weapon)
 	GameServer()->CreateSound(m_Pos, SOUND_PLAYER_DIE, Teams()->TeamMask(Team(), -1, m_pPlayer->GetCID()));
 
 	// this is for auto respawn after 3 secs
+	m_pPlayer->m_PreviousDieTick = m_pPlayer->m_DieTick;
 	m_pPlayer->m_DieTick = Server()->Tick();
 
 	GameServer()->m_World.RemoveEntity(this);

@@ -1158,7 +1158,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					if (pPlayer->GetTeam() == TEAM_SPECTATORS || pMsg->m_Team == TEAM_SPECTATORS)
 						m_VoteUpdate = true;
 					pPlayer->m_TeamChangeTick = Server()->Tick() + Server()->TickSpeed() * 3;
-					m_pController->DoTeamChange(pPlayer, pMsg->m_Team);
+					pPlayer->SetTeam(pMsg->m_Team);
 				}
 			}
 			else
