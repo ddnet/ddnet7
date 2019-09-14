@@ -5,6 +5,7 @@
 
 #include <engine/server.h>
 #include <engine/shared/memheap.h>
+#include <engine/shared/fifo.h>
 
 class CSnapIDPool
 {
