@@ -133,7 +133,7 @@ void CFileScore::Init()
 				std::istringstream iss(TmpCpLine);
 				int i = 0;
 				for(std::string p; std::getline(iss, p, ' '); i++)
-					aTmpCpTime[i] = std::stof(p, NULL);
+					aTmpCpTime[i] = str_tofloat(p.c_str());
 			}
 			m_Top.add(
 					*new CPlayerScore(TmpName.c_str(), atof(TmpScore.c_str()),
