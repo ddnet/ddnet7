@@ -6,6 +6,7 @@
 #include "gamecontext.h"
 #include "gamecontroller.h"
 #include "gameworld.h"
+#include "player.h"
 
 
 //////////////////////////////////////////////////
@@ -195,6 +196,13 @@ void CGameWorld::Tick()
 	}
 
 	RemoveEntities();
+
+	int StrongWeakID = 0;
+	for (CCharacter* pChar = (CCharacter*)FindFirst(ENTTYPE_CHARACTER); pChar; pChar = (CCharacter*)pChar->TypeNext())
+	{
+		pChar->m_StrongWeakID = StrongWeakID;
+		StrongWeakID++;
+	}
 }
 
 
@@ -258,16 +266,19 @@ CEntity *CGameWorld::ClosestEntity(vec2 Pos, float Radius, int Type, CEntity *pN
 	return pClosest;
 }
 
-CCharacter* CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity* pNotThis)
+CCharacter* CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity* pNotThis, int CollideWith)
 {
 	// Find other players
 	float ClosestRange = Radius * 2;
 	CCharacter* pClosest = 0;
 
-	CCharacter* p = (CCharacter*)GameServer()->m_World.FindFirst(ENTTYPE_CHARACTER);
+	CCharacter* p = (CCharacter*)FindFirst(ENTTYPE_CHARACTER);
 	for (; p; p = (CCharacter*)p->TypeNext())
 	{
 		if (p == pNotThis)
+			continue;
+
+		if (CollideWith != -1 && !p->CanCollide(CollideWith))
 			continue;
 
 		float Len = distance(Pos, p->m_Pos);
@@ -284,7 +295,7 @@ CCharacter* CGameWorld::ClosestCharacter(vec2 Pos, float Radius, CEntity* pNotTh
 	return pClosest;
 }
 
-std::list<class CCharacter*> CGameWorld::IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, class CEntity* pNotThis)
+std::list<class CCharacter*> CGameWorld::IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, class CEntity* pNotThis, int CollideWith)
 {
 	std::list< CCharacter* > listOfChars;
 
@@ -292,6 +303,9 @@ std::list<class CCharacter*> CGameWorld::IntersectedCharacters(vec2 Pos0, vec2 P
 	for (; pChr; pChr = (CCharacter*)pChr->TypeNext())
 	{
 		if (pChr == pNotThis)
+			continue;
+
+		if (CollideWith != -1 && !pChr->CanCollide(CollideWith))
 			continue;
 
 		vec2 IntersectPos = closest_point_on_line(Pos0, Pos1, pChr->m_Pos);

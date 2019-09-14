@@ -113,7 +113,7 @@ public:
 		Returns:
 			Returns a pointer to the closest CCharacter or NULL if no CCharacter is close enough.
 	*/
-	class CCharacter* ClosestCharacter(vec2 Pos, float Radius, CEntity* ppNotThis);
+	class CCharacter* ClosestCharacter(vec2 Pos, float Radius, CEntity* ppNotThis, int CollideWith = -1);
 
 	/*
 		Function: insert_entity
@@ -165,7 +165,7 @@ public:
 
 	// F-DDrace
 
-	std::list<class CCharacter*> IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, vec2& NewPos, class CEntity* pNotThis);
+	std::list<class CCharacter*> IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, vec2& NewPos, class CEntity* pNotThis, int CollideWith = -1);
 	void ReleaseHooked(int ClientID);
 
 
@@ -183,7 +183,7 @@ public:
 		Returns:
 			Returns list with all Characters on line.
 	*/
-	std::list<class CCharacter*> IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, class CEntity* pNotThis = 0);
+	std::list<class CCharacter*> IntersectedCharacters(vec2 Pos0, vec2 Pos1, float Radius, class CEntity* pNotThis = 0, int CollideWith = -1);
 };
 
 #endif
