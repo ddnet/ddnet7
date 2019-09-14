@@ -776,6 +776,8 @@ void CGameContext::OnClientEnter(int ClientID)
 		Msg.m_Team = NewClientInfoMsg.m_Team;
 		Server()->SendPackMsg(&Msg, MSGFLAG_NOSEND, -1);
 	}
+
+	m_pController->UpdateGameInfo(ClientID);
 }
 
 void CGameContext::OnClientConnected(int ClientID, bool Dummy, bool AsSpec)
@@ -1755,7 +1757,7 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 	{
 		CGameContext *pSelf = (CGameContext *)pUserData;
 		if(pSelf->m_pController)
-			pSelf->m_pController->CheckGameInfo();
+			pSelf->m_pController->UpdateGameInfo(-1);
 	}
 }
 
