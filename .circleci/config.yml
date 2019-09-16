@@ -12,16 +12,6 @@ jobs:
             apt-get install cmake libfreetype6-dev libsdl2-dev -y
             git submodule update --init
       - run:
-          name: Build bam
-          command: |
-            git clone https://github.com/matricks/bam.git ~/bam
-            cd ~/bam/
-            git reset --hard f012dd9a3e38295b8a45af5a101d29573381f169
-            ./make_unix.sh
-      - run:
-          name: Build teeworlds with bam
-          command: ~/bam/bam conf=release all
-      - run:
           name: Build teeworlds with cmake in Release mode
           command: |
             mkdir -p release
