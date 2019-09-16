@@ -39,6 +39,8 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 		"Based on DDRace by the DDRace developers,");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credits",
 		"which is a mod of Teeworlds by the Teeworlds developers.");
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credits",
+		"DDraceNetwork server ported to 0.7 by fokkonaut.");
 }
 
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
