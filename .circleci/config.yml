@@ -19,23 +19,23 @@ jobs:
             git reset --hard f012dd9a3e38295b8a45af5a101d29573381f169
             ./make_unix.sh
       - run:
-          name: Build teeworlds with bam
+          name: Build DDNet with bam
           command: ~/bam/bam conf=release all
       - run:
-          name: Build teeworlds with cmake in Release mode
+          name: Build DDNet with cmake in Release mode
           command: |
             mkdir -p release
             cd release
             env CFLAGS="-Wdeclaration-after-statement -Werror" CXXFLAGS="-Werror" cmake -Werror=dev -DDOWNLOAD_GTEST=ON ..
             make everything
             make run_tests
-            ./teeworlds_srv shutdown
+            ./DDNet-Server shutdown
       - run:
-          name: Build teeworlds with cmake in Debug mode
+          name: Build DDNet with cmake in Debug mode
           command: |
             mkdir -p debug
             cd debug
             env CFLAGS="-Wdeclaration-after-statement -Werror" CXXFLAGS="-Werror" cmake -Werror=dev -DDOWNLOAD_GTEST=ON -DDEV=ON ..
             make everything
             make run_tests
-            ./teeworlds_srv shutdown
+            ./DDNet-Server shutdown

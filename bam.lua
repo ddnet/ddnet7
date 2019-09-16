@@ -300,8 +300,8 @@ end
 shared_icons = {}
 function SharedIcons(compiler)
 	if not shared_icons[compiler] then
-		local server_icon = ResCompile("other/icons/teeworlds_srv_" .. compiler .. ".rc", compiler)
-		local client_icon = ResCompile("other/icons/teeworlds_" .. compiler .. ".rc", compiler)
+		local server_icon = ResCompile("other/icons/DDNet-Server.rc", compiler)
+		local client_icon = ResCompile("other/icons/DDNet.rc", compiler)
 		shared_icons[compiler] = {server=server_icon, client=client_icon}
 	end
 	return shared_icons[compiler]
@@ -309,7 +309,7 @@ end
 
 function SharedManifests(compiler)
 	if not shared_manifests then
-		local client_manifest = ResCompile("other/manifest/teeworlds.rc", compiler)
+		local client_manifest = ResCompile("other/manifest/DDNet.rc", compiler)
 		shared_manifests = {client=client_manifest}
 	end
 	return shared_manifests
@@ -333,7 +333,7 @@ function BuildClient(settings, family, platform)
 	local game_client = Compile(settings, CollectRecursive("src/game/client/*.cpp"), SharedClientFiles())
 	local game_editor = Compile(settings, Collect("src/game/editor/*.cpp"))
 	
-	Link(settings, "teeworlds", libs["zlib"], libs["md5"], libs["wavpack"], libs["png"], libs["json"], client, game_client, game_editor)
+	Link(settings, "DDNet", libs["zlib"], libs["md5"], libs["wavpack"], libs["png"], libs["json"], client, game_client, game_editor)
 end
 
 function BuildServer(settings, family, platform)
@@ -341,7 +341,7 @@ function BuildServer(settings, family, platform)
 	
 	local game_server = Compile(settings, CollectRecursive("src/game/server/*.cpp"), SharedServerFiles())
 	
-	return Link(settings, "teeworlds_srv", libs["zlib"], libs["md5"], server, game_server)
+	return Link(settings, "DDNet-Server", libs["zlib"], libs["md5"], server, game_server)
 end
 
 function BuildTools(settings)
@@ -493,7 +493,7 @@ if ScriptArgs['builddir'] then
 	builddir = ScriptArgs['builddir']
 end
 
-targets = {client="teeworlds", server="teeworlds_srv",
+targets = {client="DDNet", server="DDNet-Server",
            versionserver="versionsrv", masterserver="mastersrv",
            tools="pseudo_tools", content="content"}
 
