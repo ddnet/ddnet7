@@ -1977,11 +1977,14 @@ void CGameContext::OnInit()
 		}
 
 		char aVersion[128];
-#ifdef GIT_SHORTREV_HASH
-		str_format(aVersion, sizeof(aVersion), "%s (%s)", GAME_VERSION, GIT_SHORTREV_HASH);
-#else
-		str_format(aVersion, sizeof(aVersion), "%s", GAME_VERSION);
-#endif
+		if(GIT_SHORTREV_HASH)
+		{
+			str_format(aVersion, sizeof(aVersion), "%s (%s)", GAME_VERSION, GIT_SHORTREV_HASH);
+		}
+		else
+		{
+			str_format(aVersion, sizeof(aVersion), "%s", GAME_VERSION);
+		}
 		CTeeHistorian::CGameInfo GameInfo;
 		GameInfo.m_GameUuid = m_GameUuid;
 		GameInfo.m_pServerVersion = aVersion;
