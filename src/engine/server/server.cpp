@@ -1974,3 +1974,12 @@ int main(int argc, const char **argv) // ignore_convention
 	return Ret;
 }
 
+// DDrace
+
+void CServer::GetClientAddr(int ClientID, NETADDR* pAddr)
+{
+	if (ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CClient::STATE_INGAME)
+	{
+		*pAddr = *m_NetServer.ClientAddr(ClientID);
+	}
+}

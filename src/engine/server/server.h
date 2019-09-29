@@ -294,6 +294,9 @@ public:
 	void SnapSetStaticsize(int ItemType, int Size);
 
 	void RestrictRconOutput(int ClientID) { m_RconRestrict = ClientID; }
+
+	// DDrace
+	void GetClientAddr(int ClientID, NETADDR* pAddr);
 };
 
 #endif

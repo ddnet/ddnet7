@@ -51,6 +51,7 @@ void CPlayer::Reset()
 	m_LastPlaytime = time_get();
 	m_Sent1stAfkWarning = 0;
 	m_Sent2ndAfkWarning = 0;
+	m_ChatScore = 0;
 	m_EyeEmote = true;
 	m_DefEmote = EMOTE_NORMAL;
 	m_Afk = false;
@@ -126,6 +127,9 @@ void CPlayer::Tick()
 		m_KillMe = 0;
 		return;
 	}
+
+	if (m_ChatScore > 0)
+		m_ChatScore--;
 
 	Server()->SetClientScore(m_ClientID, m_Score);
 

@@ -38,6 +38,9 @@ public:
 	virtual int GetClientVersion(int ClientID) const = 0;
 	virtual void RestrictRconOutput(int ClientID) = 0;
 
+	// DDrace
+	virtual void GetClientAddr(int ClientID, NETADDR* pAddr) = 0;
+
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID) = 0;
 
 	template<class T>
