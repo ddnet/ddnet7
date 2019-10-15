@@ -158,6 +158,7 @@ public:
 	void CreateSound(vec2 Pos, int Sound, int64 Mask=-1);
 
 	// network
+	void SendChatTarget(int To, const char *pText);
 	void SendChat(int ChatterClientID, int Mode, int To, const char *pText);
 	void SendBroadcast(const char *pText, int ClientID);
 	void SendEmoticon(int ClientID, int Emoticon);
@@ -176,6 +177,8 @@ public:
 
 	//
 	void SwapTeams();
+
+	static void SendChatResponse(const char *pLine, void *pUser, bool Highlighted);
 
 	// engine events
 	virtual void OnInit();
@@ -210,6 +213,13 @@ public:
 	virtual const char *NetVersion() const;
 	virtual const char *NetVersionHashUsed() const;
 	virtual const char *NetVersionHashReal() const;
+
+private:
+	int m_ChatResponseTargetID;
+	int m_ChatPrintCBIndex;
+
+	// TODO: Move these to some CChatHandler or generate these
+	static void ConCredits(IConsole::IResult *pResult, void *pUserData);
 };
 
 inline int64 CmaskAll() { return -1; }

@@ -43,6 +43,8 @@ void CGameContext::Construct(int Resetting)
 	if(Resetting==NO_RESET)
 		m_pVoteOptionHeap = new CHeap();
 
+	m_ChatResponseTargetID = -1;
+	m_aDeleteTempfile[0] = '\0';
 	m_TeeHistorianActive = false;
 }
 
@@ -202,6 +204,19 @@ void CGameContext::CreateSound(vec2 Pos, int Sound, int64 Mask)
 	}
 }
 
+void CGameContext::SendChatTarget(int To, const char *pText)
+{
+	CNetMsg_Sv_Chat Msg;
+	Msg.m_Mode = CHAT_ALL;
+	Msg.m_ClientID = -1;
+	Msg.m_TargetID = -1;
+	Msg.m_pMessage = pText;
+	if(g_Config.m_SvDemoChat)
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
+	else
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, To);
+}
+
 void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *pText)
 {
 	char aBuf[256];
@@ -232,7 +247,8 @@ void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *p
 	else if(Mode == CHAT_TEAM)
 	{
 		// pack one for the recording only
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NOSEND, -1);
+		if(g_Config.m_SvDemoChat)
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NOSEND, -1);
 
 		To = m_apPlayers[ChatterClientID]->GetTeam();
 
@@ -905,6 +921,37 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					Mode = CHAT_NONE;
 			}
 
+			if(pMsg->m_pMessage[0] == '/')
+			{
+				Mode = CHAT_NONE;
+
+				// TODO: Handle spam
+				m_ChatResponseTargetID = ClientID;
+				Server()->RestrictRconOutput(ClientID);
+				Console()->SetFlagMask(CFGFLAG_CHAT);
+
+				int Authed = Server()->IsAuthed(ClientID);
+				if(Authed)
+					Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : IConsole::ACCESS_LEVEL_HELPER);
+				else
+					Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_USER);
+				Console()->SetPrintOutputLevel(m_ChatPrintCBIndex, 0);
+
+				// TODO: Fix semicolons
+				Console()->ExecuteLine(pMsg->m_pMessage + 1, ClientID);
+
+				// m_apPlayers[ClientID] can be NULL, if the player used a
+				// timeout code and replaced another client.
+				char aBuf[256];
+				str_format(aBuf, sizeof(aBuf), "%d used %s", ClientID, pMsg->m_pMessage);
+				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "chat-command", aBuf);
+
+				Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_ADMIN);
+				Console()->SetFlagMask(CFGFLAG_SERVER);
+				m_ChatResponseTargetID = -1;
+				Server()->RestrictRconOutput(-1);
+			}
+
 			if(Mode != CHAT_NONE)
 				SendChat(ClientID, Mode, pMsg->m_Target, pMsg->m_pMessage);
 		}
@@ -1538,11 +1585,45 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 	}
 }
 
+void CGameContext::SendChatResponse(const char *pLine, void *pUser, bool Highlighted)
+{
+	CGameContext *pSelf = (CGameContext *)pUser;
+	int ClientID = pSelf->m_ChatResponseTargetID;
+
+	if(ClientID < 0 || ClientID >= MAX_CLIENTS)
+		return;
+
+	const char *pLineOrig = pLine;
+
+	static volatile int ReentryGuard = 0;
+
+	if(ReentryGuard)
+		return;
+	ReentryGuard++;
+
+	if(pLine[0] == '[')
+	{
+		// Remove time and category: [20:39:00][Console]
+		pLine = str_find(pLine, "]: ");
+		if(pLine)
+			pLine += 3;
+		else
+			pLine = pLineOrig;
+	}
+
+	pSelf->SendChatTarget(ClientID, pLine);
+
+	ReentryGuard--;
+}
+
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
+
+	m_ChatPrintCBIndex = Console()->RegisterPrintCallback(0, SendChatResponse, this);
 
 	Console()->Register("tune", "si", CFGFLAG_SERVER, ConTuneParam, this, "Tune variable to value");
 	Console()->Register("tune_reset", "", CFGFLAG_SERVER, ConTuneReset, this, "Reset tuning");
@@ -1564,6 +1645,10 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("remove_vote", "s", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
+
+	// TODO: Maybe move these into some CChatHandler::RegisterCommand?
+	#define CHAT_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
+	#include "ddracechat.h"
 }
 
 void CGameContext::OnInit()

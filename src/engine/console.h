@@ -97,6 +97,8 @@ public:
 	virtual void SetTeeHistorianCommandCallback(FTeeHistorianCommandCallback pfnCallback, void *pUser) = 0;
 
 	virtual void SetAccessLevel(int AccessLevel) = 0;
+
+	virtual void SetFlagMask(int FlagMask) = 0;
 };
 
 extern IConsole *CreateConsole(int FlagMask);

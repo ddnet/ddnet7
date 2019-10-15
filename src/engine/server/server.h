@@ -197,6 +197,8 @@ public:
 	CMapChecker m_MapChecker;
 	CAuthManager m_AuthManager;
 
+	int m_RconRestrict;
+
 	CServer();
 
 	virtual void SetClientName(int ClientID, const char *pName);
@@ -297,6 +299,8 @@ public:
 	virtual void SnapFreeID(int ID);
 	virtual void *SnapNewItem(int Type, int ID, int Size);
 	void SnapSetStaticsize(int ItemType, int Size);
+
+	void RestrictRconOutput(int ClientID) { m_RconRestrict = ClientID; }
 };
 
 #endif

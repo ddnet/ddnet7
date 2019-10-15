@@ -1510,6 +1510,8 @@ set_src(ENGINE_SERVER GLOB src/engine/server
 )
 set_src(GAME_SERVER GLOB_RECURSE src/game/server
   alloc.h
+  ddracechat.cpp
+  ddracechat.h
   entities/character.cpp
   entities/character.h
   entities/flag.cpp
