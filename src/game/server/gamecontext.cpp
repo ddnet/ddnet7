@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <base/math.h>
 
+#include <engine/storage.h>
 #include <engine/shared/config.h>
 #include <engine/shared/memheap.h>
 #include <engine/map.h>
@@ -1545,6 +1546,7 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
+	m_pStorage = Kernel()->RequestInterface<IStorage>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 
 	Console()->Register("tune", "si", CFGFLAG_SERVER, ConTuneParam, this, "Tune variable to value");
@@ -1573,6 +1575,7 @@ void CGameContext::OnInit()
 {
 	// init everything
 	m_pServer = Kernel()->RequestInterface<IServer>();
+	m_pStorage = Kernel()->RequestInterface<IStorage>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
 	m_World.SetGameServer(this);
 	m_Events.SetGameServer(this);
@@ -1607,6 +1610,7 @@ void CGameContext::OnInit()
 	m_TeeHistorianActive = g_Config.m_SvTeeHistorian;
 	if(m_TeeHistorianActive)
 	{
+		dbg_msg("DEBUG", "Tee historian ACTIVE");
 		char aGameUuid[UUID_MAXSTRSIZE];
 		FormatUuid(m_GameUuid, aGameUuid, sizeof(aGameUuid));
 
@@ -1703,6 +1707,15 @@ void CGameContext::OnInit()
 			OnClientConnected(Server()->MaxClients() -i-1, true, false);
 	}
 #endif
+}
+
+void CGameContext::DeleteTempfile()
+{
+	if(m_aDeleteTempfile[0] != 0)
+	{
+		Storage()->RemoveFile(m_aDeleteTempfile, IStorage::TYPE_SAVE);
+		m_aDeleteTempfile[0] = 0;
+	}
 }
 
 void CGameContext::OnShutdown()

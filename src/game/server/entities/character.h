@@ -62,6 +62,7 @@ public:
 
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
+	CCharacterCore GetCore() { return m_Core; }
 
 private:
 	// player controlling this character
