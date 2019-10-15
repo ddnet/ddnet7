@@ -257,7 +257,7 @@ void IGameController::OnFlagReturn(CFlag *pFlag)
 {
 }
 
-bool IGameController::OnEntity(int Index, vec2 Pos)
+bool IGameController::OnEntity(int Index, vec2 Pos, CTile Tile)
 {
 	// don't add pickups in survival
 	if(m_GameFlags&GAMEFLAG_SURVIVAL)
@@ -467,7 +467,7 @@ void IGameController::ResetGame()
 {
 	// reset the game
 	GameServer()->m_World.m_ResetRequested = true;
-	
+
 	SetGameState(IGS_GAME_RUNNING);
 	m_GameStartTick = Server()->Tick();
 	m_SuddenDeath = 0;
@@ -492,7 +492,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				// run warmup till there're enough players
 				m_GameState = GameState;
  				m_GameStateTimer = TIMER_INFINITE;
-		
+
 				// enable respawning in survival when activating warmup
 				if(m_GameFlags&GAMEFLAG_SURVIVAL)
 				{
@@ -531,7 +531,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 					m_GameState = GameState;
 					m_GameStateTimer = Timer*Server()->TickSpeed();
 				}
-		
+
 				// enable respawning in survival when activating warmup
 				if(m_GameFlags&GAMEFLAG_SURVIVAL)
 				{
@@ -917,7 +917,7 @@ void IGameController::ChangeMap(const char *pToMap)
 	if(m_GameState == IGS_WARMUP_GAME || m_GameState == IGS_WARMUP_USER)
 		SetGameState(IGS_GAME_RUNNING);
 	EndMatch();
-	
+
 	if(m_GameState != IGS_END_MATCH)
 	{
 		// game could not been ended, force cycle

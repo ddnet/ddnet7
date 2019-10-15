@@ -11,5 +11,8 @@ class CGameControllerDDRace: public IGameController
 public:
 
 	CGameControllerDDRace(class CGameContext *pGameServer);
+
+	bool OnEntity(int Index, vec2 Pos, CTile Tile);
+	void Tick();
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H

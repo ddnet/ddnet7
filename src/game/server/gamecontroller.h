@@ -14,6 +14,7 @@
 */
 class IGameController
 {
+protected:
 	class CGameContext *m_pGameServer;
 	class IServer *m_pServer;
 
@@ -47,7 +48,7 @@ class IGameController
 
 		IGS_GAME_PAUSED,		// game paused (infinite or tick timer)
 		IGS_GAME_RUNNING,		// game running (infinite)
-		
+
 		IGS_END_MATCH,			// match is over (tick timer)
 		IGS_END_ROUND,			// round is over (tick timer)
  	};
@@ -64,7 +65,7 @@ class IGameController
 
 	// map
 	char m_aMapWish[128];
-	
+
 	void CycleMap();
 
 	// spawn
@@ -85,14 +86,13 @@ class IGameController
 	};
 	vec2 m_aaSpawnPoints[3][64];
 	int m_aNumSpawnPoints[3];
-	
+
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
 	void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
 
 	// team
 	int ClampTeam(int Team) const;
 
-protected:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const { return m_pServer; }
 
@@ -154,11 +154,12 @@ public:
 		Arguments:
 			index - Entity index.
 			pos - Where the entity is located in the world.
+			tile - Actual map tile.
 
 		Returns:
 			bool?
 	*/
-	virtual bool OnEntity(int Index, vec2 Pos);
+	virtual bool OnEntity(int Index, vec2 Pos, CTile Tile);
 
 	void OnPlayerConnect(class CPlayer *pPlayer);
 	void OnPlayerDisconnect(class CPlayer *pPlayer);
@@ -214,7 +215,7 @@ public:
 
 	void DoTeamChange(class CPlayer *pPlayer, int Team, bool DoChatMsg=true);
 	void ForceTeamBalance() { if(!(m_GameFlags&GAMEFLAG_SURVIVAL)) DoTeamBalance(); }
-	
+
 	int GetRealPlayerNum() const { return m_aTeamSize[TEAM_RED]+m_aTeamSize[TEAM_BLUE]; }
 	int GetStartTeam();
 };

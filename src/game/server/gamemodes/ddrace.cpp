@@ -14,5 +14,21 @@
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 		IGameController(pGameServer)
 {
+	m_pGameType = GAME_NAME;
 	SetGameState(IGS_GAME_RUNNING, TIMER_INFINITE);
+}
+
+bool CGameControllerDDRace::OnEntity(int Index, vec2 Pos, CTile Tile)
+{
+	if(IGameController::OnEntity(Index, Pos, Tile))
+		return true;
+
+	// Handle our entities here
+
+	return false;
+}
+
+void CGameControllerDDRace::Tick()
+{
+
 }
