@@ -7,6 +7,8 @@
 #include <engine/server.h>
 #include <engine/shared/memheap.h>
 
+#include "authmanager.h"
+
 class CSnapIDPool
 {
 	enum
@@ -72,10 +74,6 @@ public:
 
 	enum
 	{
-		AUTHED_NO=0,
-		AUTHED_MOD,
-		AUTHED_ADMIN,
-
 		MAX_RCONCMD_SEND=16,
 		MAX_MAPLISTENTRY_SEND = 32,
 		MIN_MAPLIST_CLIENTVERSION=0x0703,	// todo 0.8: remove me
@@ -128,6 +126,7 @@ public:
 		int m_Country;
 		int m_Score;
 		int m_Authed;
+		int m_AuthKey;
 		int m_AuthTries;
 
 		int m_MapChunk;
@@ -196,6 +195,7 @@ public:
 	CDemoRecorder m_DemoRecorder;
 	CRegister m_Register;
 	CMapChecker m_MapChecker;
+	CAuthManager m_AuthManager;
 
 	CServer();
 
@@ -275,10 +275,22 @@ public:
 	static void ConchainMaxclientsperipUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainModCommandUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainConsoleOutputLevelUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
-	static void ConchainRconPasswordSet(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+
+	void ConchainRconPasswordChangeGeneric(int Level, const char *pCurrent, IConsole::IResult *pResult);
+	static void ConchainRconPasswordChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+	static void ConchainRconModPasswordChange(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+
+	void LogoutClient(int ClientID, const char *pReason);
+	void LogoutKey(int Key, const char *pReason);
+	void AuthRemoveKey(int KeySlot);
+	static void ConAuthAdd(IConsole::IResult *pResult, void *pUser);
+	static void ConAuthAddHashed(IConsole::IResult *pResult, void *pUser);
+	static void ConAuthUpdate(IConsole::IResult *pResult, void *pUser);
+	static void ConAuthUpdateHashed(IConsole::IResult *pResult, void *pUser);
+	static void ConAuthRemove(IConsole::IResult *pResult, void *pUser);
+	static void ConAuthList(IConsole::IResult *pResult, void *pUser);
 
 	void RegisterCommands();
-
 
 	virtual int SnapNewID();
 	virtual void SnapFreeID(int ID);

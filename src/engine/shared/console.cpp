@@ -88,7 +88,7 @@ int CConsole::ParseStart(CResult *pResult, const char *pString, int Length)
 
 int CConsole::ParseArgs(CResult *pResult, const char *pFormat)
 {
-	char Command;
+	char Command = *pFormat;
 	char *pStr;
 	int Optional = 0;
 	int Error = 0;
@@ -97,10 +97,6 @@ int CConsole::ParseArgs(CResult *pResult, const char *pFormat)
 
 	while(1)
 	{
-		// fetch command
-		Command = *pFormat;
-		pFormat++;
-
 		if(!Command)
 			break;
 
@@ -113,7 +109,15 @@ int CConsole::ParseArgs(CResult *pResult, const char *pFormat)
 			if(!(*pStr)) // error, non optional command needs value
 			{
 				if(!Optional)
+				{
 					Error = 1;
+					break;
+				}
+
+				while(Command)
+				{
+					Command = NextParam(pFormat);
+				}
 				break;
 			}
 
@@ -173,9 +177,37 @@ int CConsole::ParseArgs(CResult *pResult, const char *pFormat)
 				}
 			}
 		}
+		// fetch next command
+		Command = NextParam(pFormat);
 	}
 
 	return Error;
+}
+
+char CConsole::NextParam(const char *&pFormat)
+{
+	if (*pFormat)
+	{
+		pFormat++;
+
+		if (*pFormat == '[')
+		{
+			// skip bracket contents
+			for (; *pFormat != ']'; pFormat++)
+			{
+				if (!*pFormat)
+					return *pFormat;
+			}
+
+			// skip ']'
+			pFormat++;
+
+			// skip space if there is one
+			if (*pFormat == ' ')
+				pFormat++;
+		}
+	}
+	return *pFormat;
 }
 
 int CConsole::RegisterPrintCallback(int OutputLevel, FPrintCallback pfnPrintCallback, void *pUserData)
