@@ -127,6 +127,18 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
+
+	int m_FreezeTick;
+	int m_FreezeDuration;
+
+	void DDRaceTick();
+
+public:
+	void Freeze(int Seconds);
+	void DeepFreeze();
+	void Unfreeze(bool Deep = false);
+	inline bool IsDeepFrozen() { return m_FreezeDuration < 0; };
+	inline bool IsFrozen() { return IsDeepFrozen() || m_FreezeDuration > 0; };
 };
 
 #endif

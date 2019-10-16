@@ -45,6 +45,7 @@ public:
 		virtual const char *GetString(unsigned Index) = 0;
 
 		int NumArguments() const { return m_NumArgs; }
+		int m_ClientID;
 	};
 
 	class CCommandInfo

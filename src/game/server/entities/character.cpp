@@ -532,6 +532,8 @@ void CCharacter::ResetInput()
 
 void CCharacter::Tick()
 {
+	DDRaceTick();
+
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
@@ -543,6 +545,23 @@ void CCharacter::Tick()
 
 	// handle Weapons
 	HandleWeapons();
+}
+
+void CCharacter::DDRaceTick()
+{
+	if(IsFrozen() && !IsDeepFrozen() && Server()->Tick() >= m_FreezeTick + m_FreezeDuration)
+		Unfreeze();
+
+	if(IsFrozen())
+	{
+		// TODO: Add Damage indicators and Armor
+		// Can't move
+		m_Input.m_Direction = 0;
+		m_Input.m_Jump = 0;
+		m_Input.m_Hook = 0;
+	}
+}
+
 }
 
 void CCharacter::TickDefered()
@@ -802,6 +821,34 @@ bool CCharacter::TakeDamage(vec2 Force, vec2 Source, int Dmg, int From, int Weap
 	return true;
 }
 
+void CCharacter::Freeze(int Seconds)
+{
+	if(Seconds <= 0 || IsDeepFrozen() ||
+		m_FreezeTick + m_FreezeDuration > Server()->Tick() + Seconds * Server()->TickSpeed())
+		return;
+
+	m_FreezeTick = Server()->Tick();
+	m_FreezeDuration = Seconds * Server()->TickSpeed();
+}
+
+void CCharacter::DeepFreeze()
+{
+	if(IsDeepFrozen())
+		return;
+
+	m_FreezeTick = Server()->Tick();
+	m_FreezeDuration = -1;
+}
+
+void CCharacter::Unfreeze(bool Deep)
+{
+	if(!m_FreezeDuration || (IsDeepFrozen() && !Deep))
+		return;
+
+	m_FreezeTick = -1;
+	m_FreezeDuration = 0;
+}
+
 void CCharacter::Snap(int SnappingClient)
 {
 	if(NetworkClipped(SnappingClient))
@@ -843,6 +890,13 @@ void CCharacter::Snap(int SnappingClient)
 	pCharacter->m_AttackTick = m_AttackTick;
 
 	pCharacter->m_Direction = m_Input.m_Direction;
+
+	if(IsFrozen())
+	{
+		// TODO: Handle other emotes
+		pCharacter->m_Emote = EMOTE_PAIN;
+		pCharacter->m_Weapon = WEAPON_NINJA;
+	}
 
 	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
 		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->GetSpectatorID()))

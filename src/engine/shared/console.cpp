@@ -304,6 +304,7 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientID)
 	while(pStr && *pStr)
 	{
 		CResult Result;
+		Result.m_ClientID = ClientID;
 		const char *pEnd = pStr;
 		const char *pNextPart = 0;
 		int InString = 0;

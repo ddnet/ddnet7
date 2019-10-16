@@ -31,3 +31,20 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credits",
 		"which is a mod of Teeworlds by the Teeworlds developers.");
 }
+
+void CGameContext::ConFreeze(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	CCharacter *pChr = pSelf->m_apPlayers[pResult->m_ClientID]->GetCharacter();
+	if(pResult->NumArguments() >= 1)
+	{
+		int Duration = pResult->GetInteger(0);
+		if(Duration > 0)
+			pChr->Freeze(Duration);
+		else
+			pChr->DeepFreeze();
+	}
+	else
+		pChr->Freeze(3);
+}

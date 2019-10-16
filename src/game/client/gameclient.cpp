@@ -700,7 +700,6 @@ void CGameClient::OnMessage(int MsgId, CUnpacker *pUnpacker)
 	}
 
 	void *pRawMsg = m_NetObjHandler.SecureUnpackMsg(MsgId, pUnpacker);
-	dbg_msg("DEBUG", "%d", MsgId);
 	if(!pRawMsg)
 	{
 		char aBuf[256];
