@@ -3,6 +3,8 @@
 #ifndef GAME_SERVER_ENTITIES_CHARACTER_H
 #define GAME_SERVER_ENTITIES_CHARACTER_H
 
+#include <list>
+
 #include <generated/protocol.h>
 
 #include <game/gamecore.h>
@@ -121,6 +123,7 @@ private:
 
 	// the player core for the physics
 	CCharacterCore m_Core;
+	vec2 m_PrevPos;
 
 	// info for dead reckoning
 	int m_ReckoningTick; // tick that we are performing dead reckoning From
@@ -132,6 +135,9 @@ private:
 	int m_FreezeDuration;
 
 	void DDRaceTick();
+	void DDRacePostCoreTick();
+	void HandleSkippableTiles(int Index);
+	void HandleTiles(std::list<int> &Indices);
 
 public:
 	void Freeze(int Seconds);

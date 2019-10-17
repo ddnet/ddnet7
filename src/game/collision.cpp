@@ -34,20 +34,6 @@ void CCollision::Init(class CLayers *pLayers)
 		if(Index > 128)
 			continue;
 
-		switch(Index)
-		{
-		case TILE_DEATH:
-			m_pTiles[i].m_Index = COLFLAG_DEATH;
-			break;
-		case TILE_SOLID:
-			m_pTiles[i].m_Index = COLFLAG_SOLID;
-			break;
-		case TILE_NOHOOK:
-			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
-			break;
-		default:
-			m_pTiles[i].m_Index = 0;
-		}
 	}
 }
 
@@ -61,7 +47,8 @@ int CCollision::GetTile(int x, int y) const
 
 bool CCollision::IsTileSolid(int x, int y) const
 {
-	return GetTile(x, y)&COLFLAG_SOLID;
+	int Tile = GetTile(x, y);
+	return Tile == TILE_SOLID || Tile == TILE_NOHOOK;
 }
 
 // TODO: rewrite this smarter!
@@ -201,4 +188,85 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
+}
+
+bool CCollision::TileExists(int Index)
+{
+	if(Index < 0)
+		return false;
+
+	// Check tile index here, possibly after implementing layers
+	if(Index == TILE_FREEZE)
+		return true;
+
+	// Check what TileExistsNext does in ddrace
+	return true;
+}
+
+int CCollision::GetMapIndex(vec2 Pos)
+{
+	int Nx = clamp((int)Pos.x / 32, 0, m_Width - 1);
+	int Ny = clamp((int)Pos.y / 32, 0, m_Height - 1);
+	int Index = Ny*m_Width+Nx;
+
+	if(TileExists(Index))
+		return Index;
+	else
+		return -1;
+}
+
+
+std::list<int> CCollision::GetMapIndices(vec2 PrevPos, vec2 Pos, unsigned MaxIndices)
+{
+	std::list< int > Indices;
+	float d = distance(PrevPos, Pos);
+	int End = d + 1;
+
+	// TODO: Check if this needs a proper epsilon check
+	if(!d)
+	{
+		int Nx = clamp((int)Pos.x / 32, 0, m_Width - 1);
+		int Ny = clamp((int)Pos.y / 32, 0, m_Height - 1);
+		int Index = Ny * m_Width + Nx;
+
+		if(TileExists(Index))
+		{
+			Indices.push_back(Index);
+			return Indices;
+		}
+		else
+			return Indices;
+	}
+	else
+	{
+		float a = 0.0f;
+		vec2 Tmp = vec2(0, 0);
+		int Nx = 0;
+		int Ny = 0;
+		int Index,LastIndex = 0;
+		for(int i = 0; i < End; i++)
+		{
+			a = i/d;
+			Tmp = mix(PrevPos, Pos, a);
+			Nx = clamp((int)Tmp.x / 32, 0, m_Width - 1);
+			Ny = clamp((int)Tmp.y / 32, 0, m_Height - 1);
+			Index = Ny * m_Width + Nx;
+			if(TileExists(Index) && LastIndex != Index)
+			{
+				if(MaxIndices && Indices.size() > MaxIndices)
+					return Indices;
+				Indices.push_back(Index);
+				LastIndex = Index;
+			}
+		}
+
+		return Indices;
+	}
+}
+
+int CCollision::GetTileIndex(int MapIndex)
+{
+	if(MapIndex < 0)
+		return 0;
+	return m_pTiles[MapIndex].m_Index;
 }

@@ -6,6 +6,7 @@
 #include <game/server/gamecontext.h>
 #include <game/server/gamecontroller.h>
 #include <game/server/player.h>
+#include <game/server/gamemodes/ddrace.h>
 
 #include "character.h"
 #include "laser.h"
@@ -124,7 +125,7 @@ void CCharacter::HandleNinja()
 		// time's up, return
 		m_aWeapons[WEAPON_NINJA].m_Got = false;
 		m_ActiveWeapon = m_LastWeapon;
-		
+
 		// reset velocity
 		if(m_Ninja.m_CurrentMoveTime > 0)
 			m_Core.m_Vel = m_Ninja.m_ActivationDir*m_Ninja.m_OldVelAmount;
@@ -537,11 +538,12 @@ void CCharacter::Tick()
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
 
+	// TODO: Clear this up with a collision function
 	// handle death-tiles and leaving gamelayer
-	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+GetProximityRadius()/3.f, m_Pos.y-GetProximityRadius()/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x+GetProximityRadius()/3.f, m_Pos.y+GetProximityRadius()/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x-GetProximityRadius()/3.f, m_Pos.y-GetProximityRadius()/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x-GetProximityRadius()/3.f, m_Pos.y+GetProximityRadius()/3.f)&CCollision::COLFLAG_DEATH ||
+	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+GetProximityRadius()/3.f, m_Pos.y-GetProximityRadius()/3.f) == TILE_DEATH ||
+		GameServer()->Collision()->GetCollisionAt(m_Pos.x+GetProximityRadius()/3.f, m_Pos.y+GetProximityRadius()/3.f) == TILE_DEATH ||
+		GameServer()->Collision()->GetCollisionAt(m_Pos.x-GetProximityRadius()/3.f, m_Pos.y-GetProximityRadius()/3.f) == TILE_DEATH ||
+		GameServer()->Collision()->GetCollisionAt(m_Pos.x-GetProximityRadius()/3.f, m_Pos.y+GetProximityRadius()/3.f) == TILE_DEATH ||
 		GameLayerClipped(m_Pos))
 	{
 		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
@@ -549,6 +551,9 @@ void CCharacter::Tick()
 
 	// handle Weapons
 	HandleWeapons();
+
+	DDRacePostCoreTick();
+	m_PrevPos = m_Core.m_Pos;
 }
 
 void CCharacter::DDRaceTick()
@@ -566,6 +571,42 @@ void CCharacter::DDRaceTick()
 	}
 }
 
+void CCharacter::DDRacePostCoreTick()
+{
+	if(GameLayerClipped(m_Pos))
+	{
+		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
+		return;
+	}
+
+	int CurrentIndex = GameServer()->Collision()->GetMapIndex(m_Pos);
+	HandleSkippableTiles(CurrentIndex);
+
+	std::list<int> Indices = GameServer()->Collision()->GetMapIndices(m_PrevPos, m_Pos);
+	if(Indices.empty())
+	{
+		// TODO: Modify GetMapIndices to return ALL indices
+		Indices.push_back(CurrentIndex);
+	}
+
+	HandleTiles(Indices);
+}
+
+void CCharacter::HandleSkippableTiles(int Index)
+{
+
+}
+
+void CCharacter::HandleTiles(std::list<int> &Indices)
+{
+	CGameControllerDDRace *pController = (CGameControllerDDRace *)GameServer()->m_pController;
+	for(auto i : Indices)
+	{
+		int TileIndex = GameServer()->Collision()->GetTileIndex(i);
+
+		if(TileIndex == TILE_FREEZE)
+			Freeze(g_Config.m_SvFreezeDuration);
+	}
 }
 
 void CCharacter::TickDefered()
@@ -616,7 +657,7 @@ void CCharacter::TickDefered()
 			StartVelX.u, StartVelY.u);
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 	}
-	
+
 	m_TriggeredEvents |= m_Core.m_TriggeredEvents;
 
 	if(m_pPlayer->GetTeam() == TEAM_SPECTATORS)

@@ -3,6 +3,7 @@
 #ifndef GAME_COLLISION_H
 #define GAME_COLLISION_H
 
+#include <list>
 #include <base/vmath.h>
 
 class CCollision
@@ -16,12 +17,6 @@ class CCollision
 	int GetTile(int x, int y) const;
 
 public:
-	enum
-	{
-		COLFLAG_SOLID=1,
-		COLFLAG_DEATH=2,
-		COLFLAG_NOHOOK=4,
-	};
 
 	CCollision();
 	void Init(class CLayers *pLayers);
@@ -34,6 +29,11 @@ public:
 	void MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, int *pBounces) const;
 	void MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elasticity) const;
 	bool TestBox(vec2 Pos, vec2 Size) const;
+
+	bool TileExists(int Index);
+	int GetMapIndex(vec2 Pos);
+	std::list<int> GetMapIndices(vec2 PrevPos, vec2 Pos, unsigned MaxIndices = 0);
+	int GetTileIndex(int MapIndex);
 };
 
 #endif
