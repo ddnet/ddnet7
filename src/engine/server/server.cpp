@@ -458,6 +458,7 @@ const char *CServer::AuthName(int ClientID) const
 	{
 	case AUTHED_ADMIN: return "default_admin";
 	case AUTHED_MOD: return "default_mod";
+	case AUTHED_HELPER: return "default_helper";
 	}
 	return 0;
 }
@@ -836,7 +837,7 @@ void CServer::UpdateClientRconCommands()
 	{
 		if(m_aClients[ClientID].m_State != CClient::STATE_EMPTY && m_aClients[ClientID].m_Authed)
 		{
-			int ConsoleAccessLevel = m_aClients[ClientID].m_Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : IConsole::ACCESS_LEVEL_MOD;
+			int ConsoleAccessLevel = m_aClients[ClientID].m_Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : m_aClients[ClientID].m_Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : IConsole::ACCESS_LEVEL_HELPER;
 			for(int i = 0; i < MAX_RCONCMD_SEND && m_aClients[ClientID].m_pRconCmdToSend; ++i)
 			{
 				SendRconCmdAdd(m_aClients[ClientID].m_pRconCmdToSend, ClientID);
@@ -1085,7 +1086,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 				Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBuf);
 				m_RconClientID = ClientID;
 				m_RconAuthLevel = m_aClients[ClientID].m_Authed;
-				Console()->SetAccessLevel(m_aClients[ClientID].m_Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : m_aClients[ClientID].m_Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : IConsole::ACCESS_LEVEL_USER);
+				Console()->SetAccessLevel(m_aClients[ClientID].m_Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : m_aClients[ClientID].m_Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : m_aClients[ClientID].m_Authed == AUTHED_HELPER ? IConsole::ACCESS_LEVEL_HELPER : IConsole::ACCESS_LEVEL_USER);
 				Console()->ExecuteLineFlag(pCmd, CFGFLAG_SERVER, ClientID);
 				Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_ADMIN);
 				m_RconClientID = IServer::RCON_CID_SERV;
@@ -1122,6 +1123,8 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 						AuthLevel = AUTHED_ADMIN;
 					else if(m_AuthManager.CheckKey((KeySlot = m_AuthManager.DefaultKey(AUTHED_MOD)), pPw))
 						AuthLevel = AUTHED_MOD;
+					else if(m_AuthManager.CheckKey((KeySlot = m_AuthManager.DefaultKey(AUTHED_HELPER)), pPw))
+						AuthLevel = AUTHED_HELPER;
 				}
 				else
 				{
@@ -1788,6 +1791,8 @@ static int GetAuthLevel(const char *pLevel)
 		Level = AUTHED_ADMIN;
 	else if(!str_comp_nocase_num(pLevel, "mod", 3))
 		Level = AUTHED_MOD;
+	else if(!str_comp_nocase(pLevel, "helper"))
+		Level = AUTHED_HELPER;
 
 	return Level;
 }
@@ -2189,6 +2194,7 @@ void CServer::RegisterCommands()
 
 	Console()->Chain("sv_rcon_password", ConchainRconPasswordChange, this);
 	Console()->Chain("sv_rcon_mod_password", ConchainRconModPasswordChange, this);
+	Console()->Chain("sv_rcon_helper_password", ConchainRconHelperPasswordChange, this);
 
 	// DDRace
 

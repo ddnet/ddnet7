@@ -1060,7 +1060,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				int Authed = Server()->GetAuthedState(ClientID);
 				if (Authed)
-					Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : IConsole::ACCESS_LEVEL_MOD);
+					Console()->SetAccessLevel(Authed == AUTHED_ADMIN ? IConsole::ACCESS_LEVEL_ADMIN : Authed == AUTHED_MOD ? IConsole::ACCESS_LEVEL_MOD : IConsole::ACCESS_LEVEL_HELPER);
 				else
 					Console()->SetAccessLevel(IConsole::ACCESS_LEVEL_USER);
 				Console()->SetPrintOutputLevel(m_ChatPrintCBIndex, 0);

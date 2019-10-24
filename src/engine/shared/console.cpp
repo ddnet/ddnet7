@@ -940,7 +940,7 @@ void CConsole::Register(const char *pName, const char *pParams,
 	if(DoAdd)
 		AddCommandSorted(pCommand);
 
-	if (pCommand->m_Flags & CFGFLAG_CHAT)
+	if (pCommand->m_Flags&CFGFLAG_CHAT)
 		pCommand->SetAccessLevel(ACCESS_LEVEL_USER);
 }
 
