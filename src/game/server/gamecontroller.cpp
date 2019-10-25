@@ -258,7 +258,7 @@ void IGameController::OnFlagReturn(CFlag *pFlag)
 {
 }
 
-bool IGameController::OnEntity(int Index, vec2 Pos, CTile Tile)
+bool IGameController::OnEntity(int Index, vec2 Pos, CTile Tile, CGameWorld *pWorld)
 {
 	// don't add pickups in survival
 	if(m_GameFlags&GAMEFLAG_SURVIVAL)
@@ -303,7 +303,7 @@ bool IGameController::OnEntity(int Index, vec2 Pos, CTile Tile)
 	if(Type != -1)
 	{
 		//TODO: Broke vanilla here
-		//new CPickup(&GameServer()->m_World, Type, Pos);
+		new CPickup(pWorld, Type, Pos);
 		return true;
 	}
 

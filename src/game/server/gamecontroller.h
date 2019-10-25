@@ -161,11 +161,12 @@ public:
 			index - Entity index.
 			pos - Where the entity is located in the world.
 			tile - Actual map tile.
+			world - CGameWorld to create the entity in
 
 		Returns:
 			bool?
 	*/
-	virtual bool OnEntity(int Index, vec2 Pos, CTile Tile);
+	virtual bool OnEntity(int Index, vec2 Pos, CTile Tile, CGameWorld *pWorld);
 
 	void OnPlayerConnect(class CPlayer *pPlayer);
 	void OnPlayerDisconnect(class CPlayer *pPlayer);

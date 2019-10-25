@@ -30,14 +30,37 @@ CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 	SetGameState(IGS_GAME_RUNNING, TIMER_INFINITE);
 }
 
-bool CGameControllerDDRace::OnEntity(int Index, vec2 Pos, CTile Tile)
+bool CGameControllerDDRace::OnEntityInternal(int Index, vec2 Pos, CTile Tile, CGameWorld *pWorld)
 {
-	if(IGameController::OnEntity(Index, Pos, Tile))
+	dbg_assert(!!pWorld, "World can't be null");
+	if(IGameController::OnEntity(Index, Pos, Tile, pWorld))
 		return true;
 
 	// Handle our entities here
 
 	return false;
+}
+
+bool CGameControllerDDRace::OnEntity(int Index, vec2 Pos, CTile Tile, CGameWorld *pWorld)
+{
+	if(!pWorld)
+	{
+		bool Result = true;
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			pWorld = m_apGameWorlds[i];
+			if(!pWorld)
+				continue;
+
+			Result = Result && OnEntityInternal(Index, Pos, Tile, pWorld);
+		}
+		return Result;
+	}
+	else
+	{
+		return OnEntityInternal(Index, Pos, Tile, pWorld);
+	}
+
 }
 
 void CGameControllerDDRace::Tick()

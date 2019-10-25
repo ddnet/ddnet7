@@ -1671,7 +1671,7 @@ void CGameContext::OnInit()
 			if(Tile.m_Index >= ENTITY_OFFSET)
 			{
 				vec2 Pos(x*32.0f+16.0f, y*32.0f+16.0f);
-				m_pController->OnEntity(Tile.m_Index-ENTITY_OFFSET, Pos, Tile);
+				m_pController->OnEntity(Tile.m_Index-ENTITY_OFFSET, Pos, Tile, nullptr);
 			}
 		}
 	}
