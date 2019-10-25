@@ -52,7 +52,11 @@ protected:
 
 public:
 	/* Constructor */
-	CEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pos, int ProximityRadius=0);
+	CEntity(int Objtype, vec2 Pos, int ProximityRadius=0);
+
+	/* World Hooks */
+	virtual void OnInsert(CGameWorld *pWorld);
+	virtual void OnRemove() {};
 
 	/* Destructor */
 	virtual ~CEntity();
@@ -119,6 +123,7 @@ public:
 	*/
 	virtual void Snap(int SnappingClient) {}
 
+	//TODO: Document
 	virtual void PostSnap() {}
 
 	/*

@@ -139,6 +139,7 @@ void CGameContext::CreateHammerHit(vec2 Pos)
 
 void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, CGameWorld *pWorld)
 {
+	dbg_msg("DEBUG", "Creating explosion in world %p", pWorld);
 	// create the event
 	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
 	if(pEvent)
@@ -153,6 +154,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamag
 	float InnerRadius = 48.0f;
 	float MaxForce = g_pData->m_Explosion.m_MaxForce;
 	int Num = pWorld->FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+	dbg_msg("DEBUG", "%d characters", Num);
 	for(int i = 0; i < Num; i++)
 	{
 		vec2 Diff = apEnts[i]->GetPos() - Pos;

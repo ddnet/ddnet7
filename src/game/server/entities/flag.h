@@ -24,7 +24,7 @@ public:
 	static int const ms_PhysSize = 14;
 
 	/* Constructor */
-	CFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos);
+	CFlag(int Team, vec2 StandPos);
 
 	/* Getters */
 	int GetTeam() const				{ return m_Team; }
@@ -34,6 +34,7 @@ public:
 	int GetDropTick() const			{ return m_DropTick; }
 
 	/* CEntity functions */
+	virtual void OnInsert(CGameWorld *pWorld);
 	virtual void Reset();
 	virtual void TickPaused();
 	virtual void Snap(int SnappingClient);

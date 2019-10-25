@@ -20,7 +20,13 @@ CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 	m_apGameWorlds[0] = new CGameWorld();
 	m_apGameWorlds[0]->SetGameServer(pGameServer);
 	m_ResetWorlds[0] = false;
-	for(int i = 1; i < MAX_CLIENTS; i++)
+	m_apGameWorlds[1] = new CGameWorld();
+	m_apGameWorlds[1]->SetGameServer(pGameServer);
+	m_ResetWorlds[1] = false;
+	m_apGameWorlds[2] = new CGameWorld();
+	m_apGameWorlds[2]->SetGameServer(pGameServer);
+	m_ResetWorlds[2] = false;
+	for(int i = 3; i < MAX_CLIENTS; i++)
 	{
 		m_apGameWorlds[i] = nullptr;
 		m_ResetWorlds[i] = false;
@@ -162,4 +168,27 @@ void CGameControllerDDRace::SetTuning(CTuningParams &Tuning)
 
 		pWorld->m_Core.m_Tuning = Tuning;
 	}
+}
+
+int CGameControllerDDRace::JoinTeam(CPlayer *pPlayer, int Team)
+{
+	CGameWorld *pNewWorld = m_apGameWorlds[Team];
+	if(!pNewWorld)
+	{
+		//TODO: Create world here
+	}
+
+	//TODO: Handle invites and team lock here
+
+	CGameWorld *pOldWorld = pPlayer->GameWorld();
+	CCharacter *pChr = pPlayer->GetCharacter();
+
+	dbg_msg("DEBUG", "Joining world %p from %p", pNewWorld, pOldWorld);
+	// Remove the character from the old world
+	pOldWorld->RemoveEntity(pChr);
+
+	// Add him to the new one
+	pNewWorld->InsertEntity(pPlayer->GetCharacter());
+
+	return Team;
 }

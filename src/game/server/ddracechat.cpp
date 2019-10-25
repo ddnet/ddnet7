@@ -48,3 +48,21 @@ void CGameContext::ConFreeze(IConsole::IResult *pResult, void *pUserData)
 	else
 		pChr->Freeze(3);
 }
+
+void CGameContext::ConTeam(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
+	if(pResult->NumArguments() >= 1)
+	{
+		int Team = pResult->GetInteger(0);
+		pPlayer->JoinDDRaceTeam(Team);
+	}
+	else
+	{
+		char aBuf[128];
+		str_format(aBuf, sizeof(aBuf), "You are in team %d", pPlayer->GetDDRaceTeam());
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "teams", aBuf);
+	}
+}

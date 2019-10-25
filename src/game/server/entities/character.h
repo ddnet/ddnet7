@@ -24,8 +24,10 @@ public:
 		MIN_KILLMESSAGE_CLIENTVERSION=0x0704,   // todo 0.8: remove me
 	};
 
-	CCharacter(CGameWorld *pWorld);
+	CCharacter();
 
+	virtual void OnInsert(CGameWorld *pWorld);
+	virtual void OnRemove();
 	virtual void Reset();
 	virtual void Destroy();
 	virtual void Tick();

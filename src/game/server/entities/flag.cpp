@@ -6,14 +6,16 @@
 #include "character.h"
 #include "flag.h"
 
-CFlag::CFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, StandPos, ms_PhysSize)
+CFlag::CFlag(int Team, vec2 StandPos)
+: CEntity(CGameWorld::ENTTYPE_FLAG, StandPos, ms_PhysSize)
 {
 	m_Team = Team;
 	m_StandPos = StandPos;
+}
 
-	GameWorld()->InsertEntity(this);
-
+void CFlag::OnInsert(CGameWorld *pWorld)
+{
+	CEntity::OnInsert(pWorld);
 	Reset();
 }
 

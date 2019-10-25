@@ -422,11 +422,18 @@ void CPlayer::TryRespawn()
 	CGameWorld *pWorld = GameWorld();
 	dbg_assert(!!pWorld, "Teamworld must exist"); // This should be created on team join
 
-	if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos, pWorld))
+	if(!Controller()->CanSpawn(m_Team, &SpawnPos, pWorld))
 		return;
 
 	m_Spawning = false;
-	m_pCharacter = new(m_ClientID) CCharacter(pWorld);
+	m_pCharacter = new(m_ClientID) CCharacter();
 	m_pCharacter->Spawn(this, SpawnPos);
+	pWorld->InsertEntity(m_pCharacter);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
+}
+
+bool CPlayer::JoinDDRaceTeam(int Team)
+{
+	m_DDRaceTeam = Controller()->JoinTeam(this, Team);
+	return m_DDRaceTeam == Team;
 }

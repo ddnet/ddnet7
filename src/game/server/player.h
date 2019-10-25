@@ -139,6 +139,7 @@ private:
 public:
 	int GetDDRaceTeam() const { return m_DDRaceTeam; };
 	CGameWorld *GameWorld() const { return Controller()->GetGameWorld(m_DDRaceTeam); };
+	bool JoinDDRaceTeam(int Team);
 };
 
 #endif

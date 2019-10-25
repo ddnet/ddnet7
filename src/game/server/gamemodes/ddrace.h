@@ -25,5 +25,6 @@ public:
 
 	CGameWorld *GetGameWorld(int Team) { return m_apGameWorlds[Team]; };
 	void SetTuning(CTuningParams &Tuning);
+	int JoinTeam(CPlayer *pPlayer, int Team);
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H

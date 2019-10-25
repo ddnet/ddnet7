@@ -214,6 +214,7 @@ private:
 	// TODO: Move these to some CChatHandler or generate these
 	static void ConCredits(IConsole::IResult *pResult, void *pUserData);
 	static void ConFreeze(IConsole::IResult *pResult, void *pUserData);
+	static void ConTeam(IConsole::IResult *pResult, void *pUserData);
 };
 
 inline int64 CmaskAll() { return -1; }
