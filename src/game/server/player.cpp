@@ -15,6 +15,9 @@ IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpec)
 {
 	m_pGameServer = pGameServer;
+	m_pController = dynamic_cast<CGameControllerDDRace *>(pGameServer->m_pController);
+	dbg_assert(!!m_pController, "Controller must be DDRace");
+
 	m_RespawnTick = Server()->Tick();
 	m_DieTick = Server()->Tick();
 	m_ScoreStartTick = Server()->Tick();
@@ -33,6 +36,7 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, bool Dummy, bool AsSpe
 	m_RespawnDisabled = GameServer()->m_pController->GetStartRespawnState();
 	m_DeadSpecMode = false;
 	m_Spawning = 0;
+	m_DDRaceTeam = 0;
 }
 
 CPlayer::~CPlayer()
@@ -233,7 +237,7 @@ void CPlayer::OnPredictedInput(CNetObj_PlayerInput *NewInput)
 
 void CPlayer::OnDirectInput(CNetObj_PlayerInput *NewInput)
 {
-	if(GameServer()->m_World.m_Paused)
+	if(GameWorld()->m_Paused)
 	{
 		m_PlayerFlags = NewInput->m_PlayerFlags;
 		return;
@@ -268,23 +272,10 @@ void CPlayer::OnDirectInput(CNetObj_PlayerInput *NewInput)
 			m_ActiveSpecSwitch = true;
 			if(m_SpecMode == SPEC_FREEVIEW)
 			{
-				CCharacter *pChar = (CCharacter *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_CHARACTER, 0);
-				CFlag *pFlag = (CFlag *)GameServer()->m_World.ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_FLAG, 0);
-				if(pChar || pFlag)
-				{
-					if(!pChar || (pFlag && pChar && distance(m_ViewPos, pFlag->GetPos()) < distance(m_ViewPos, pChar->GetPos())))
-					{
-						m_SpecMode = pFlag->GetTeam() == TEAM_RED ? SPEC_FLAGRED : SPEC_FLAGBLUE;
-						m_pSpecFlag = pFlag;
-						m_SpectatorID = -1;
-					}
-					else
-					{
-						m_SpecMode = SPEC_PLAYER;
-						m_pSpecFlag = 0;
-						m_SpectatorID = pChar->GetPlayer()->GetCID();
-					}
-				}
+				CCharacter *pChar = (CCharacter *)GameWorld()->ClosestEntity(m_ViewPos, 6.0f*32, CGameWorld::ENTTYPE_CHARACTER, 0);
+				m_SpecMode = SPEC_PLAYER;
+				m_pSpecFlag = 0;
+				m_SpectatorID = pChar->GetPlayer()->GetCID();
 			}
 			else
 			{
@@ -346,56 +337,23 @@ void CPlayer::Respawn()
 
 bool CPlayer::SetSpectatorID(int SpecMode, int SpectatorID)
 {
-	if((SpecMode == m_SpecMode && SpecMode != SPEC_PLAYER) ||
-		(m_SpecMode == SPEC_PLAYER && SpecMode == SPEC_PLAYER && (SpectatorID == -1 || m_SpectatorID == SpectatorID || m_ClientID == SpectatorID)))
-	{
+	// No flags in DDRace
+	if(SpecMode != SPEC_FREEVIEW && SpecMode != SPEC_PLAYER)
 		return false;
-	}
 
 	if(m_Team == TEAM_SPECTATORS)
 	{
 		// check for freeview or if wanted player is playing
-		if(SpecMode != SPEC_PLAYER || (SpecMode == SPEC_PLAYER && GameServer()->m_apPlayers[SpectatorID] && GameServer()->m_apPlayers[SpectatorID]->GetTeam() != TEAM_SPECTATORS))
+		if(SpecMode == SPEC_FREEVIEW || (SpecMode == SPEC_PLAYER && GameServer()->m_apPlayers[SpectatorID] && GameServer()->m_apPlayers[SpectatorID]->GetTeam() != TEAM_SPECTATORS))
 		{
-			if(SpecMode == SPEC_FLAGRED || SpecMode == SPEC_FLAGBLUE)
-			{
-				CFlag *pFlag = (CFlag*)GameServer()->m_World.FindFirst(CGameWorld::ENTTYPE_FLAG);
-				while (pFlag)
-				{
-					if ((pFlag->GetTeam() == TEAM_RED && SpecMode == SPEC_FLAGRED) || (pFlag->GetTeam() == TEAM_BLUE && SpecMode == SPEC_FLAGBLUE))
-					{
-						m_pSpecFlag = pFlag;
-						if (pFlag->GetCarrier())
-							m_SpectatorID = pFlag->GetCarrier()->GetPlayer()->GetCID();
-						else
-							m_SpectatorID = -1;
-						break;
-					}
-					pFlag = (CFlag*)pFlag->TypeNext();
-				}
-				if (!m_pSpecFlag)
-					return false;
-				m_SpecMode = SpecMode;
-				return true;
-			}
 			m_pSpecFlag = 0;
 			m_SpecMode = SpecMode;
-			m_SpectatorID = SpectatorID;
-			return true;
-		}
-	}
-	else if(m_DeadSpecMode)
-	{
-		// check if wanted player can be followed
-		if(SpecMode == SPEC_PLAYER && GameServer()->m_apPlayers[SpectatorID] && DeadCanFollow(GameServer()->m_apPlayers[SpectatorID]))
-		{
-			m_SpecMode = SpecMode;
-			m_pSpecFlag = 0;
 			m_SpectatorID = SpectatorID;
 			return true;
 		}
 	}
 
+	//TODO: Pause probably needs handling here
 	return false;
 }
 
@@ -461,12 +419,14 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 void CPlayer::TryRespawn()
 {
 	vec2 SpawnPos;
+	CGameWorld *pWorld = GameWorld();
+	dbg_assert(!!pWorld, "Teamworld must exist"); // This should be created on team join
 
-	if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos))
+	if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos, pWorld))
 		return;
 
 	m_Spawning = false;
-	m_pCharacter = new(m_ClientID) CCharacter(&GameServer()->m_World);
+	m_pCharacter = new(m_ClientID) CCharacter(pWorld);
 	m_pCharacter->Spawn(this, SpawnPos);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
 }

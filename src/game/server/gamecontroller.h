@@ -87,8 +87,8 @@ protected:
 	vec2 m_aaSpawnPoints[3][64];
 	int m_aNumSpawnPoints[3];
 
-	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
-	void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
+	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos, CGameWorld *pWorld) const;
+	void EvaluateSpawnType(CSpawnEval *pEval, int Type, CGameWorld *pWorld) const;
 
 	// team
 	int ClampTeam(int Team) const;
@@ -166,6 +166,9 @@ public:
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
 	void OnPlayerReadyChange(class CPlayer *pPlayer);
 
+	virtual void OnSetPaused(bool Paused) { };
+	virtual void OnResetRequested() { };
+
 	void OnReset();
 
 	// game
@@ -187,6 +190,7 @@ public:
 
 	// general
 	virtual void Snap(int SnappingClient);
+	virtual void PostSnap() { };
 	virtual void Tick();
 
 	// info
@@ -206,7 +210,7 @@ public:
 	void ChangeMap(const char *pToMap);
 
 	//spawn
-	bool CanSpawn(int Team, vec2 *pPos) const;
+	virtual bool CanSpawn(int Team, vec2 *pPos, CGameWorld *pWorld) const;
 	bool GetStartRespawnState() const;
 
 	// team

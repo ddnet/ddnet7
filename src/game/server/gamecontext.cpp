@@ -46,6 +46,7 @@ void CGameContext::Construct(int Resetting)
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = '\0';
 	m_TeeHistorianActive = false;
+	m_Paused = false;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -109,6 +110,21 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	return m_apPlayers[ClientID]->GetCharacter();
 }
 
+void CGameContext::SetPaused(bool Paused)
+{
+	if(m_Paused != Paused)
+	{
+		m_Paused = Paused;
+		m_pController->OnSetPaused(Paused);
+	}
+}
+
+void CGameContext::RequestReset()
+{
+	m_WorldResetRequested = true;
+	m_pController->OnResetRequested();
+}
+
 void CGameContext::CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self)
 {
 	float f = angle(Source);
@@ -137,7 +153,7 @@ void CGameContext::CreateHammerHit(vec2 Pos)
 }
 
 
-void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage)
+void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, CGameWorld *pWorld)
 {
 	// create the event
 	CNetEvent_Explosion *pEvent = (CNetEvent_Explosion *)m_Events.Create(NETEVENTTYPE_EXPLOSION, sizeof(CNetEvent_Explosion));
@@ -152,7 +168,7 @@ void CGameContext::CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamag
 	float Radius = g_pData->m_Explosion.m_Radius;
 	float InnerRadius = 48.0f;
 	float MaxForce = g_pData->m_Explosion.m_MaxForce;
-	int Num = m_World.FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+	int Num = pWorld->FindEntities(Pos, Radius, (CEntity**)apEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 	for(int i = 0; i < Num; i++)
 	{
 		vec2 Diff = apEnts[i]->GetPos() - Pos;
@@ -510,10 +526,12 @@ void CGameContext::OnTick()
 	}
 
 	// copy tuning
-	m_World.m_Core.m_Tuning = m_Tuning;
-	m_World.Tick();
+	//m_World.m_Core.m_Tuning = m_Tuning;
+	//m_World.Tick();
 
 	//if(world.paused) // make sure that the game object always updates
+	// TODO: Get rid of the cast
+	((CGameControllerDDRace *)m_pController)->SetTuning(m_Tuning);
 	m_pController->Tick();
 
 	if(m_TeeHistorianActive)
@@ -650,7 +668,7 @@ void CGameContext::OnClientDirectInput(int ClientID, void *pInput)
 
 void CGameContext::OnClientPredictedInput(int ClientID, void *pInput)
 {
-	if(!m_World.m_Paused)
+	if(!m_apPlayers[ClientID]->GameWorld()->m_Paused)
 	{
 		int NumFailures = m_NetObjHandler.NumObjFailures();
 		if(m_NetObjHandler.ValidateObj(NETOBJTYPE_PLAYERINPUT, pInput, sizeof(CNetObj_PlayerInput)) == -1)
@@ -764,8 +782,13 @@ void CGameContext::OnClientTeamChange(int ClientID)
 	if(m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS)
 		AbortVoteOnTeamChange(ClientID);
 
-	// mark client's projectile has team projectile
-	CProjectile *p = (CProjectile *)m_World.FindFirst(CGameWorld::ENTTYPE_PROJECTILE);
+	//TODO: Remove this? Doesn't really make sense in terms of DDRace
+	CGameWorld *pWorld = m_apPlayers[ClientID]->GameWorld();
+	if(!pWorld)
+		return;
+
+	// mark client's projectile s team projectile
+	CProjectile *p = (CProjectile *)pWorld->FindFirst(CGameWorld::ENTTYPE_PROJECTILE);
 	for(; p; p = (CProjectile *)p->TypeNext())
 	{
 		if(p->GetOwner() == ClientID)
@@ -798,12 +821,17 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, -1);
 	}
 
-	// mark client's projectile has team projectile
-	CProjectile *p = (CProjectile *)m_World.FindFirst(CGameWorld::ENTTYPE_PROJECTILE);
-	for(; p; p = (CProjectile *)p->TypeNext())
+	//TODO: Remove this? Doesn't make much sense in context of DDRace
+	CGameWorld *pWorld = m_apPlayers[ClientID]->GameWorld();
+	if(pWorld)
 	{
-		if(p->GetOwner() == ClientID)
-			p->LoseOwner();
+		// mark client's projectile has team projectile
+		CProjectile *p = (CProjectile *)pWorld->FindFirst(CGameWorld::ENTTYPE_PROJECTILE);
+		for(; p; p = (CProjectile *)p->TypeNext())
+		{
+			if(p->GetOwner() == ClientID)
+				p->LoseOwner();
+		}
 	}
 
 	delete m_apPlayers[ClientID];
@@ -1111,7 +1139,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				m_pController->DoTeamChange(pPlayer, pMsg->m_Team);
 			}
 		}
-		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_World.m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_Paused)
 		{
 			CNetMsg_Cl_SetSpectatorMode *pMsg = (CNetMsg_Cl_SetSpectatorMode *)pRawMsg;
 
@@ -1122,7 +1150,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(!pPlayer->SetSpectatorID(pMsg->m_SpecMode, pMsg->m_SpectatorID))
 				SendGameMsg(GAMEMSG_SPEC_INVALIDID, ClientID);
 		}
-		else if (MsgID == NETMSGTYPE_CL_EMOTICON && !m_World.m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_EMOTICON && !m_Paused)
 		{
 			CNetMsg_Cl_Emoticon *pMsg = (CNetMsg_Cl_Emoticon *)pRawMsg;
 
@@ -1133,7 +1161,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			SendEmoticon(ClientID, pMsg->m_Emoticon);
 		}
-		else if (MsgID == NETMSGTYPE_CL_KILL && !m_World.m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_KILL && !m_Paused)
 		{
 			if(pPlayer->m_LastKill && pPlayer->m_LastKill+Server()->TickSpeed()*3 > Server()->Tick())
 				return;
@@ -1307,85 +1335,6 @@ void CGameContext::ConBroadcast(IConsole::IResult* pResult, void* pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	pSelf->SendBroadcast(pResult->GetString(0), -1);
-}
-
-void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
-	int Team = clamp(pResult->GetInteger(1), -1, 1);
-	int Delay = pResult->NumArguments()>2 ? pResult->GetInteger(2) : 0;
-	if(!pSelf->m_apPlayers[ClientID] || !pSelf->m_pController->CanJoinTeam(Team, ClientID))
-		return;
-
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "moved client %d to team %d", ClientID, Team);
-	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
-
-	pSelf->m_apPlayers[ClientID]->m_TeamChangeTick = pSelf->Server()->Tick()+pSelf->Server()->TickSpeed()*Delay*60;
-	pSelf->m_pController->DoTeamChange(pSelf->m_apPlayers[ClientID], Team);
-}
-
-void CGameContext::ConSetTeamAll(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	int Team = clamp(pResult->GetInteger(0), -1, 1);
-
-	pSelf->SendGameMsg(GAMEMSG_TEAM_ALL, Team, -1);
-
-	for(int i = 0; i < MAX_CLIENTS; ++i)
-		if(pSelf->m_apPlayers[i] && pSelf->m_pController->CanJoinTeam(Team, i))
-			pSelf->m_pController->DoTeamChange(pSelf->m_apPlayers[i], Team, false);
-}
-
-void CGameContext::ConSwapTeams(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->SwapTeams();
-}
-
-void CGameContext::ConShuffleTeams(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	if(!pSelf->m_pController->IsTeamplay())
-		return;
-
-	int rnd = 0;
-	int PlayerTeam = 0;
-	int aPlayer[MAX_CLIENTS];
-
-	for(int i = 0; i < MAX_CLIENTS; i++)
-		if(pSelf->m_apPlayers[i] && pSelf->m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
-			aPlayer[PlayerTeam++]=i;
-
-	pSelf->SendGameMsg(GAMEMSG_TEAM_SHUFFLE, -1);
-
-	//creating random permutation
-	for(int i = PlayerTeam; i > 1; i--)
-	{
-		rnd = random_int() % i;
-		int tmp = aPlayer[rnd];
-		aPlayer[rnd] = aPlayer[i-1];
-		aPlayer[i-1] = tmp;
-	}
-	//uneven Number of Players?
-	rnd = PlayerTeam % 2 ? random_int() % 2 : 0;
-
-	for(int i = 0; i < PlayerTeam; i++)
-		pSelf->m_pController->DoTeamChange(pSelf->m_apPlayers[aPlayer[i]], i < (PlayerTeam+rnd)/2 ? TEAM_RED : TEAM_BLUE, false);
-}
-
-void CGameContext::ConLockTeams(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->m_LockTeams ^= 1;
-	pSelf->SendSettings(-1);
-}
-
-void CGameContext::ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData)
-{
-	CGameContext *pSelf = (CGameContext *)pUserData;
-	pSelf->m_pController->ForceTeamBalance();
 }
 
 void CGameContext::ConAddVote(IConsole::IResult *pResult, void *pUserData)
@@ -1634,12 +1583,6 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("restart", "?i", CFGFLAG_SERVER|CFGFLAG_STORE, ConRestart, this, "Restart in x seconds (0 = abort)");
 	Console()->Register("say", "r", CFGFLAG_SERVER, ConSay, this, "Say in chat");
 	Console()->Register("broadcast", "r", CFGFLAG_SERVER, ConBroadcast, this, "Broadcast message");
-	Console()->Register("set_team", "ii?i", CFGFLAG_SERVER, ConSetTeam, this, "Set team of player to team");
-	Console()->Register("set_team_all", "i", CFGFLAG_SERVER, ConSetTeamAll, this, "Set team of all players to team");
-	Console()->Register("swap_teams", "", CFGFLAG_SERVER, ConSwapTeams, this, "Swap the current teams");
-	Console()->Register("shuffle_teams", "", CFGFLAG_SERVER, ConShuffleTeams, this, "Shuffle the current teams");
-	Console()->Register("lock_teams", "", CFGFLAG_SERVER, ConLockTeams, this, "Lock/unlock teams");
-	Console()->Register("force_teambalance", "", CFGFLAG_SERVER, ConForceTeamBalance, this, "Force team balance");
 
 	Console()->Register("add_vote", "sr", CFGFLAG_SERVER, ConAddVote, this, "Add a voting option");
 	Console()->Register("remove_vote", "s", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
@@ -1657,7 +1600,6 @@ void CGameContext::OnInit()
 	m_pServer = Kernel()->RequestInterface<IServer>();
 	m_pStorage = Kernel()->RequestInterface<IStorage>();
 	m_pConsole = Kernel()->RequestInterface<IConsole>();
-	m_World.SetGameServer(this);
 	m_Events.SetGameServer(this);
 
 	m_GameUuid = RandomUuid();
@@ -1815,7 +1757,8 @@ void CGameContext::OnSnap(int ClientID)
 		mem_copy(pTuneParams->m_aTuneParams, &m_Tuning, sizeof(pTuneParams->m_aTuneParams));
 	}
 
-	m_World.Snap(ClientID);
+	// Snapping the world in the controller now
+	//m_World.Snap(ClientID);
 	m_pController->Snap(ClientID);
 	m_Events.Snap(ClientID);
 
@@ -1828,7 +1771,8 @@ void CGameContext::OnSnap(int ClientID)
 void CGameContext::OnPreSnap() {}
 void CGameContext::OnPostSnap()
 {
-	m_World.PostSnap();
+	//m_World.PostSnap();
+	m_pController->PostSnap();
 	m_Events.Clear();
 }
 
