@@ -426,7 +426,8 @@ void CPlayer::TryRespawn()
 		return;
 
 	m_Spawning = false;
-	m_pCharacter = new(m_ClientID) CCharacter(pWorld);
+	m_pCharacter = new(m_ClientID) CCharacter();
 	m_pCharacter->Spawn(this, SpawnPos);
+	pWorld->InsertEntity(m_pCharacter);
 	GameServer()->CreatePlayerSpawn(SpawnPos);
 }

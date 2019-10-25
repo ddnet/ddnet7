@@ -47,12 +47,14 @@ protected:
 	*/
 	vec2 m_Pos;
 
+	virtual void InsertInto(CGameWorld *pWorld);
+
 	/* Getters */
 	int GetID() const					{ return m_ID; }
 
 public:
 	/* Constructor */
-	CEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pos, int ProximityRadius=0);
+	CEntity(int Objtype, vec2 Pos, int ProximityRadius=0);
 
 	/* Destructor */
 	virtual ~CEntity();

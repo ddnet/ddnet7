@@ -7,14 +7,16 @@
 #include "character.h"
 #include "pickup.h"
 
-CPickup::CPickup(CGameWorld *pGameWorld, int Type, vec2 Pos)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PICKUP, Pos, PickupPhysSize)
+CPickup::CPickup(int Type, vec2 Pos)
+: CEntity(CGameWorld::ENTTYPE_PICKUP, Pos, PickupPhysSize)
 {
 	m_Type = Type;
+}
 
+void CPickup::InsertInto(CGameWorld *pWorld)
+{
+	CEntity::InsertInto(pWorld);
 	Reset();
-
-	GameWorld()->InsertEntity(this);
 }
 
 void CPickup::Reset()

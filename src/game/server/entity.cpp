@@ -5,14 +5,13 @@
 #include "gamecontext.h"
 #include "player.h"
 
-CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int ProximityRadius)
+CEntity::CEntity(int ObjType, vec2 Pos, int ProximityRadius)
 {
-	m_pGameWorld = pGameWorld;
+	m_pGameWorld = nullptr;
 
 	m_pPrevTypeEntity = 0;
 	m_pNextTypeEntity = 0;
 
-	m_ID = Server()->SnapNewID();
 	m_ObjType = ObjType;
 
 	m_ProximityRadius = ProximityRadius;
@@ -23,8 +22,15 @@ CEntity::CEntity(CGameWorld *pGameWorld, int ObjType, vec2 Pos, int ProximityRad
 
 CEntity::~CEntity()
 {
-	GameWorld()->RemoveEntity(this);
+	if(GameWorld())
+		GameWorld()->RemoveEntity(this);
 	Server()->SnapFreeID(m_ID);
+}
+
+void CEntity::InsertInto(CGameWorld *pWorld)
+{
+	m_pGameWorld = pWorld;
+	m_ID = Server()->SnapNewID();
 }
 
 int CEntity::NetworkClipped(int SnappingClient)

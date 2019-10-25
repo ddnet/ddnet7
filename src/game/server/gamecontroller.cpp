@@ -302,8 +302,8 @@ bool IGameController::OnEntity(int Index, vec2 Pos, CTile Tile, CGameWorld *pWor
 
 	if(Type != -1)
 	{
-		//TODO: Broke vanilla here
-		new CPickup(pWorld, Type, Pos);
+		CPickup *pPickup = new CPickup(Type, Pos);
+		pWorld->InsertEntity(pPickup);
 		return true;
 	}
 
