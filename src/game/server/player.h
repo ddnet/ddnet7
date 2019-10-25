@@ -4,7 +4,7 @@
 #define GAME_SERVER_PLAYER_H
 
 #include "alloc.h"
-
+#include "gamemodes/ddrace.h"
 
 enum
 {
@@ -115,9 +115,11 @@ public:
 private:
 	CCharacter *m_pCharacter;
 	CGameContext *m_pGameServer;
+	CGameControllerDDRace *m_pController;
 
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const;
+	CGameControllerDDRace *Controller() const { return m_pController; }
 
 	//
 	bool m_Spawning;
@@ -130,6 +132,13 @@ private:
 	int m_SpectatorID;
 	class CFlag *m_pSpecFlag;
 	bool m_ActiveSpecSwitch;
+
+	// DDRace
+	int m_DDRaceTeam;
+
+public:
+	int GetDDRaceTeam() const { return m_DDRaceTeam; };
+	CGameWorld *GameWorld() const { return Controller()->GetGameWorld(m_DDRaceTeam); };
 };
 
 #endif

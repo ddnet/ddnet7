@@ -68,12 +68,6 @@ class CGameContext : public IGameServer
 	static void ConRestart(IConsole::IResult *pResult, void *pUserData);
 	static void ConSay(IConsole::IResult *pResult, void *pUserData);
 	static void ConBroadcast(IConsole::IResult *pResult, void *pUserData);
-	static void ConSetTeam(IConsole::IResult *pResult, void *pUserData);
-	static void ConSetTeamAll(IConsole::IResult *pResult, void *pUserData);
-	static void ConSwapTeams(IConsole::IResult *pResult, void *pUserData);
-	static void ConShuffleTeams(IConsole::IResult *pResult, void *pUserData);
-	static void ConLockTeams(IConsole::IResult *pResult, void *pUserData);
-	static void ConForceTeamBalance(IConsole::IResult *pResult, void *pUserData);
 	static void ConAddVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConRemoveVote(IConsole::IResult *pResult, void *pUserData);
 	static void ConClearVotes(IConsole::IResult *pResult, void *pUserData);
@@ -86,6 +80,8 @@ class CGameContext : public IGameServer
 	void Construct(int Resetting);
 
 	bool m_Resetting;
+	bool m_Paused;
+	bool m_WorldResetRequested;
 public:
 	IServer *Server() const { return m_pServer; }
 	IStorage *Storage() { return m_pStorage; }
@@ -102,7 +98,6 @@ public:
 	class CPlayer *m_apPlayers[MAX_CLIENTS];
 
 	class IGameController *m_pController;
-	CGameWorld m_World;
 
 	// helper functions
 	class CCharacter *GetPlayerChar(int ClientID);
@@ -149,9 +144,16 @@ public:
 	CVoteOptionServer *m_pVoteOptionFirst;
 	CVoteOptionServer *m_pVoteOptionLast;
 
+	// TODO: Maybe get rid of these, the idea was to avoid changes in IGameController, but these are ugly
+	// global world functions
+	void SetPaused(bool Paused);
+	bool IsPaused() const { return m_Paused; };
+	void RequestReset();
+	bool IsResetRequested() { return m_WorldResetRequested; };
+
 	// helper functions
 	void CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self);
-	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage);
+	void CreateExplosion(vec2 Pos, int Owner, int Weapon, int MaxDamage, CGameWorld *pWorld);
 	void CreateHammerHit(vec2 Pos);
 	void CreatePlayerSpawn(vec2 Pos);
 	void CreateDeath(vec2 Pos, int Who);
