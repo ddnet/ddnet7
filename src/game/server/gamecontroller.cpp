@@ -30,6 +30,7 @@ IGameController::IGameController(CGameContext *pGameServer)
 	m_SuddenDeath = 0;
 	m_aTeamscore[TEAM_RED] = 0;
 	m_aTeamscore[TEAM_BLUE] = 0;
+	m_WorldPaused = false;
 	if(g_Config.m_SvWarmup)
 		SetGameState(IGS_WARMUP_USER, g_Config.m_SvWarmup);
 	else
@@ -392,8 +393,10 @@ void IGameController::CheckReadyStates(int WithoutID)
 	}
 }
 
-void IGameController::OnReset()
+void IGameController::OnReset(CGameWorld *pWorld)
 {
+	m_WorldResetRequested = false;
+
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(GameServer()->m_apPlayers[i])
@@ -467,7 +470,7 @@ bool IGameController::DoWincheckMatch()
 void IGameController::ResetGame()
 {
 	// reset the game
-	GameServer()->RequestReset();
+	m_WorldResetRequested = true;
 
 	SetGameState(IGS_GAME_RUNNING);
 	m_GameStartTick = Server()->Tick();
@@ -556,14 +559,14 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			{
 				m_GameState = GameState;
 				m_GameStateTimer = 3*Server()->TickSpeed();
-				GameServer()->SetPaused(true);
+				PauseWorld();
 
 			}
 			else if(g_Config.m_SvCountdown > 0)
 			{
 				m_GameState = GameState;
 				m_GameStateTimer = g_Config.m_SvCountdown*Server()->TickSpeed();
-				GameServer()->SetPaused(true);
+				PauseWorld();
 			}
 			else
 			{
@@ -578,7 +581,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_GameState = GameState;
 			m_GameStateTimer = TIMER_INFINITE;
 			SetPlayersReadyState(true);
-			GameServer()->SetPaused(false);
+			UnpauseWorld();
 		}
 		break;
 	case IGS_GAME_PAUSED:
@@ -601,7 +604,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 				}
 
 				m_GameState = GameState;
-				GameServer()->SetPaused(true);
+				PauseWorld();
 			}
 			else
 			{
@@ -620,7 +623,7 @@ void IGameController::SetGameState(EGameState GameState, int Timer)
 			m_GameState = GameState;
 			m_GameStateTimer = Timer*Server()->TickSpeed();
 			m_SuddenDeath = 0;
-			GameServer()->SetPaused(true);
+			PauseWorld();
 		}
 	}
 }
@@ -656,6 +659,16 @@ void IGameController::StartRound()
 		SetGameState(IGS_START_COUNTDOWN);
 	else
 		SetGameState(IGS_WARMUP_GAME, TIMER_INFINITE);
+}
+
+void IGameController::PauseWorld()
+{
+	m_WorldPaused = true;
+}
+
+void IGameController::UnpauseWorld()
+{
+	m_WorldPaused = false;
 }
 
 void IGameController::SwapTeamscore()
@@ -827,7 +840,7 @@ void IGameController::Tick()
 	DoActivityCheck();
 
 	// win check
-	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->IsResetRequested())
+	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !m_WorldResetRequested)
 	{
 		if(m_GameFlags&GAMEFLAG_SURVIVAL)
 			DoWincheckRound();
@@ -881,7 +894,7 @@ bool IGameController::IsPlayerReadyMode() const
 
 bool IGameController::IsTeamChangeAllowed() const
 {
-	return !GameServer()->IsPaused() || (m_GameState == IGS_START_COUNTDOWN && m_GameStartTick == Server()->Tick());
+	return !m_WorldPaused || (m_GameState == IGS_START_COUNTDOWN && m_GameStartTick == Server()->Tick());
 }
 
 void IGameController::UpdateGameInfo(int ClientID)
@@ -999,7 +1012,7 @@ void IGameController::CycleMap()
 bool IGameController::CanSpawn(int Team, vec2 *pOutPos, CGameWorld *pWorld) const
 {
 	// spectators can't spawn
-	if(Team == TEAM_SPECTATORS || pWorld->m_Paused || pWorld->m_ResetRequested)
+	if(Team == TEAM_SPECTATORS || pWorld->IsPaused() || m_WorldResetRequested)
 		return false;
 
 	CSpawnEval Eval;

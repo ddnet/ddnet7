@@ -27,6 +27,8 @@ public:
 	};
 
 private:
+	bool m_Paused;
+
 	void Reset();
 	void RemoveEntities();
 
@@ -41,7 +43,6 @@ public:
 	class IServer *Server() { return m_pServer; }
 
 	bool m_ResetRequested;
-	bool m_Paused;
 	CWorldCore m_Core;
 
 	CGameWorld();
@@ -136,7 +137,7 @@ public:
 			is being created.
 	*/
 	void Snap(int SnappingClient);
-	
+
 	void PostSnap();
 
 	/*
@@ -146,6 +147,10 @@ public:
 
 	*/
 	void Tick();
+
+
+	bool IsPaused();
+	bool IsResetRequested();
 };
 
 #endif

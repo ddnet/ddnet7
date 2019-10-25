@@ -139,7 +139,7 @@ void CGameWorld::Reset()
 		}
 	RemoveEntities();
 
-	GameServer()->m_pController->OnReset();
+	GameServer()->m_pController->OnReset(this);
 	RemoveEntities();
 
 	m_ResetRequested = false;
@@ -163,10 +163,14 @@ void CGameWorld::RemoveEntities()
 
 void CGameWorld::Tick()
 {
+	if(GameServer()->m_pController->IsWorldResetRequested() && !m_ResetRequested)
+		m_ResetRequested = true;
+
 	if(m_ResetRequested)
 		Reset();
 
-	if(!m_Paused)
+	//dbg_msg("DEBUG", "W%d G%d R%d", m_Paused, GameServer()->m_pController->IsWorldPaused(), IsPaused());
+	if(!IsPaused())
 	{
 		// update all objects
 		for(int i = 0; i < NUM_ENTTYPES; i++)
@@ -256,4 +260,14 @@ CEntity *CGameWorld::ClosestEntity(vec2 Pos, float Radius, int Type, CEntity *pN
 	}
 
 	return pClosest;
+}
+
+bool CGameWorld::IsPaused()
+{
+	return m_Paused || GameServer()->m_pController->IsWorldPaused();
+}
+
+bool CGameWorld::IsResetRequested()
+{
+	return m_ResetRequested || GameServer()->m_pController->IsWorldResetRequested();
 }

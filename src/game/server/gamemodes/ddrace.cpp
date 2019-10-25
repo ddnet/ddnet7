@@ -17,10 +17,14 @@
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 		IGameController(pGameServer)
 {
-	m_apTeamWorlds[0] = new CGameWorld();
-	m_apTeamWorlds[0]->SetGameServer(pGameServer);
-	for(int i = 2; i < MAX_CLIENTS; i++)
-		m_apTeamWorlds[i] = nullptr;
+	m_apGameWorlds[0] = new CGameWorld();
+	m_apGameWorlds[0]->SetGameServer(pGameServer);
+	m_ResetWorlds[0] = false;
+	for(int i = 1; i < MAX_CLIENTS; i++)
+	{
+		m_apGameWorlds[i] = nullptr;
+		m_ResetWorlds[i] = false;
+	}
 
 	m_pGameType = GAME_NAME;
 	SetGameState(IGS_GAME_RUNNING, TIMER_INFINITE);
@@ -39,7 +43,7 @@ bool CGameControllerDDRace::OnEntity(int Index, vec2 Pos, CTile Tile)
 void CGameControllerDDRace::Tick()
 {
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CGameWorld *pWorld = m_apTeamWorlds[i];
+		CGameWorld *pWorld = m_apGameWorlds[i];
 		if(!pWorld)
 			continue;
 
@@ -53,7 +57,7 @@ void CGameControllerDDRace::Snap(int SnappingClient)
 	CPlayer *pPlayer = m_pGameServer->m_apPlayers[SnappingClient];
 	if(pPlayer->GetTeam() == TEAM_SPECTATORS) {
 		for(int i = 0; i < MAX_CLIENTS; i++) {
-			CGameWorld *pWorld = m_apTeamWorlds[i];
+			CGameWorld *pWorld = m_apGameWorlds[i];
 			if(!pWorld)
 				continue;
 
@@ -61,7 +65,7 @@ void CGameControllerDDRace::Snap(int SnappingClient)
 		}
 	}
 	else {
-		CGameWorld *pWorld = m_apTeamWorlds[pPlayer->GetDDRaceTeam()];
+		CGameWorld *pWorld = m_apGameWorlds[pPlayer->GetDDRaceTeam()];
 		dbg_assert(!!pWorld, "Ingame players must have a gameworld");
 
 		pWorld->Snap(SnappingClient);
@@ -74,7 +78,7 @@ void CGameControllerDDRace::PostSnap()
 {
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		CGameWorld *pWorld = m_apTeamWorlds[i];
+		CGameWorld *pWorld = m_apGameWorlds[i];
 		if(!pWorld)
 			continue;
 
@@ -98,38 +102,41 @@ bool CGameControllerDDRace::CanSpawn(int Team, vec2 *pPos, CGameWorld *pWorld) c
 	return Eval.m_Got;
 }
 
+//TODO: Maybe drop this and butcher gamecontroller instead
+void CGameControllerDDRace::OnReset(CGameWorld *pWorld)
+{
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(m_apGameWorlds[i] == pWorld)
+		{
+			m_ResetWorlds[i] = true;
+			break;
+		}
+	}
+
+	bool Ready = false;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(m_apGameWorlds[i])
+		{
+			Ready = m_ResetWorlds[i];
+			if(!m_ResetWorlds[i])
+				break;
+		}
+	}
+
+	if(Ready)
+		IGameController::OnReset(pWorld);
+}
+
 void CGameControllerDDRace::SetTuning(CTuningParams &Tuning)
 {
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		CGameWorld *pWorld = m_apTeamWorlds[i];
+		CGameWorld *pWorld = m_apGameWorlds[i];
 		if(!pWorld)
 			continue;
 
 		pWorld->m_Core.m_Tuning = Tuning;
-	}
-}
-
-void CGameControllerDDRace::OnSetPaused(bool Paused)
-{
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		CGameWorld *pWorld = m_apTeamWorlds[i];
-		if(!pWorld)
-			continue;
-
-		pWorld->m_Paused = Paused;
-	}
-}
-
-void CGameControllerDDRace::OnResetRequested()
-{
-	for(int i = 0; i < MAX_CLIENTS; i++)
-	{
-		CGameWorld *pWorld = m_apTeamWorlds[i];
-		if(!pWorld)
-			continue;
-
-		pWorld->m_ResetRequested = true;
 	}
 }

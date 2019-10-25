@@ -80,8 +80,6 @@ class CGameContext : public IGameServer
 	void Construct(int Resetting);
 
 	bool m_Resetting;
-	bool m_Paused;
-	bool m_WorldResetRequested;
 public:
 	IServer *Server() const { return m_pServer; }
 	IStorage *Storage() { return m_pStorage; }
@@ -143,13 +141,6 @@ public:
 	class CHeap *m_pVoteOptionHeap;
 	CVoteOptionServer *m_pVoteOptionFirst;
 	CVoteOptionServer *m_pVoteOptionLast;
-
-	// TODO: Maybe get rid of these, the idea was to avoid changes in IGameController, but these are ugly
-	// global world functions
-	void SetPaused(bool Paused);
-	bool IsPaused() const { return m_Paused; };
-	void RequestReset();
-	bool IsResetRequested() { return m_WorldResetRequested; };
 
 	// helper functions
 	void CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self);

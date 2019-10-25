@@ -62,6 +62,8 @@ protected:
 	void SetGameState(EGameState GameState, int Timer=0);
 	void StartMatch();
 	void StartRound();
+	virtual void PauseWorld();
+	virtual void UnpauseWorld();
 
 	// map
 	char m_aMapWish[128];
@@ -102,6 +104,10 @@ protected:
 	int m_RoundCount;
 	int m_SuddenDeath;
 	int m_aTeamscore[NUM_TEAMS];
+
+	// world
+	bool m_WorldPaused;
+	bool m_WorldResetRequested;
 
 	void EndMatch() { SetGameState(IGS_END_MATCH, TIMER_END); }
 	void EndRound() { SetGameState(IGS_END_ROUND, TIMER_END/2); }
@@ -166,10 +172,7 @@ public:
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
 	void OnPlayerReadyChange(class CPlayer *pPlayer);
 
-	virtual void OnSetPaused(bool Paused) { };
-	virtual void OnResetRequested() { };
-
-	void OnReset();
+	virtual void OnReset(CGameWorld *pWorld);
 
 	// game
 	enum
@@ -203,6 +206,8 @@ public:
 	bool IsTeamChangeAllowed() const;
 	bool IsTeamplay() const { return m_GameFlags&GAMEFLAG_TEAMS; }
 	bool IsSurvival() const { return m_GameFlags&GAMEFLAG_SURVIVAL; }
+	bool IsWorldPaused() const { return m_WorldPaused; }
+	bool IsWorldResetRequested() const { return m_WorldResetRequested; }
 
 	const char *GetGameType() const { return m_pGameType; }
 

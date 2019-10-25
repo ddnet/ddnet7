@@ -46,7 +46,6 @@ void CGameContext::Construct(int Resetting)
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = '\0';
 	m_TeeHistorianActive = false;
-	m_Paused = false;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -108,21 +107,6 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	if(ClientID < 0 || ClientID >= MAX_CLIENTS || !m_apPlayers[ClientID])
 		return 0;
 	return m_apPlayers[ClientID]->GetCharacter();
-}
-
-void CGameContext::SetPaused(bool Paused)
-{
-	if(m_Paused != Paused)
-	{
-		m_Paused = Paused;
-		m_pController->OnSetPaused(Paused);
-	}
-}
-
-void CGameContext::RequestReset()
-{
-	m_WorldResetRequested = true;
-	m_pController->OnResetRequested();
 }
 
 void CGameContext::CreateDamage(vec2 Pos, int Id, vec2 Source, int HealthAmount, int ArmorAmount, bool Self)
@@ -668,7 +652,7 @@ void CGameContext::OnClientDirectInput(int ClientID, void *pInput)
 
 void CGameContext::OnClientPredictedInput(int ClientID, void *pInput)
 {
-	if(!m_apPlayers[ClientID]->GameWorld()->m_Paused)
+	if(!m_apPlayers[ClientID]->GameWorld()->IsPaused())
 	{
 		int NumFailures = m_NetObjHandler.NumObjFailures();
 		if(m_NetObjHandler.ValidateObj(NETOBJTYPE_PLAYERINPUT, pInput, sizeof(CNetObj_PlayerInput)) == -1)
@@ -1139,7 +1123,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				m_pController->DoTeamChange(pPlayer, pMsg->m_Team);
 			}
 		}
-		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_SETSPECTATORMODE && !pPlayer->GameWorld()->IsPaused())
 		{
 			CNetMsg_Cl_SetSpectatorMode *pMsg = (CNetMsg_Cl_SetSpectatorMode *)pRawMsg;
 
@@ -1150,7 +1134,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(!pPlayer->SetSpectatorID(pMsg->m_SpecMode, pMsg->m_SpectatorID))
 				SendGameMsg(GAMEMSG_SPEC_INVALIDID, ClientID);
 		}
-		else if (MsgID == NETMSGTYPE_CL_EMOTICON && !m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_EMOTICON && !pPlayer->GameWorld()->IsPaused())
 		{
 			CNetMsg_Cl_Emoticon *pMsg = (CNetMsg_Cl_Emoticon *)pRawMsg;
 
@@ -1161,7 +1145,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			SendEmoticon(ClientID, pMsg->m_Emoticon);
 		}
-		else if (MsgID == NETMSGTYPE_CL_KILL && !m_Paused)
+		else if (MsgID == NETMSGTYPE_CL_KILL && !pPlayer->GameWorld()->IsPaused())
 		{
 			if(pPlayer->m_LastKill && pPlayer->m_LastKill+Server()->TickSpeed()*3 > Server()->Tick())
 				return;

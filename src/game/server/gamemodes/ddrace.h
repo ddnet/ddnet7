@@ -9,7 +9,8 @@
 class CGameControllerDDRace: public IGameController
 {
 	//TODO: Replace this with a std::vector
-	CGameWorld *m_apTeamWorlds[MAX_CLIENTS];
+	CGameWorld *m_apGameWorlds[MAX_CLIENTS];
+	bool m_ResetWorlds[MAX_CLIENTS];
 
 public:
 	CGameControllerDDRace(class CGameContext *pGameServer);
@@ -19,10 +20,9 @@ public:
 	void Snap(int SnappingClient);
 	void PostSnap();
 	bool CanSpawn(int Team, vec2 *pPos, CGameWorld *pWorld) const;
+	void OnReset(CGameWorld *pWorld);
 
-	CGameWorld *GetGameWorld(int Team) { return m_apTeamWorlds[Team]; };
+	CGameWorld *GetGameWorld(int Team) { return m_apGameWorlds[Team]; };
 	void SetTuning(CTuningParams &Tuning);
-	void OnSetPaused(bool Paused);
-	void OnResetRequested();
 };
 #endif // GAME_SERVER_GAMEMODES_DDRACE_H
