@@ -8,21 +8,29 @@ CTeamsCore::CTeamsCore()
 
 bool CTeamsCore::SameTeam(int ClientID1, int ClientID2)
 {
+	if (ClientID1 == -1 || ClientID2 == -1)
+		return false;
 	return m_Team[ClientID1] == m_Team[ClientID2];
 }
 
 int CTeamsCore::Team(int ClientID)
 {
+	if (ClientID == -1)
+		return -1;
 	return m_Team[ClientID];
 }
 
 void CTeamsCore::Team(int ClientID, int Team)
 {
+	if (ClientID == -1)
+		return;
 	m_Team[ClientID] = Team;
 }
 
 bool CTeamsCore::CanKeepHook(int ClientID1, int ClientID2)
 {
+	if (ClientID1 == -1 || ClientID2 == -1)
+		return false;
 	if (m_Team[ClientID1] == TEAM_SUPER || m_Team[ClientID2] == TEAM_SUPER || ClientID1 == ClientID2)
 		return true;
 	return m_Team[ClientID1] == m_Team[ClientID2];
@@ -30,6 +38,8 @@ bool CTeamsCore::CanKeepHook(int ClientID1, int ClientID2)
 
 bool CTeamsCore::CanCollide(int ClientID1, int ClientID2)
 {
+	if (ClientID1 == -1 || ClientID2 == -1)
+		return false;
 	if (m_Team[ClientID1] == TEAM_SUPER || m_Team[ClientID2] == TEAM_SUPER || ClientID1 == ClientID2)
 		return true;
 	if (m_IsSolo[ClientID1] || m_IsSolo[ClientID2])
