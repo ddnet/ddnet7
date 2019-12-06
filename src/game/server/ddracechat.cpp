@@ -946,6 +946,8 @@ void CGameContext::ConProtectedKill(IConsole::IResult *pResult, void *pUserData)
 void CGameContext::ConPoints(IConsole::IResult *pResult, void *pUserData)
 {
 #if defined(CONF_SQL)
+// TODO: SQL
+/*
 	CGameContext *pSelf = (CGameContext *) pUserData;
 	if (!CheckClientID(pResult->m_ClientID))
 		return;
@@ -973,12 +975,15 @@ void CGameContext::ConPoints(IConsole::IResult *pResult, void *pUserData)
 
 	if(pSelf->m_apPlayers[pResult->m_ClientID] && g_Config.m_SvUseSQL)
 		pSelf->m_apPlayers[pResult->m_ClientID]->m_LastSQLQuery = pSelf->Server()->Tick();
+*/
 #endif
 }
 
 void CGameContext::ConTopPoints(IConsole::IResult *pResult, void *pUserData)
 {
 #if defined(CONF_SQL)
+// TODO: SQL
+/*
 	CGameContext *pSelf = (CGameContext *) pUserData;
 	if (!CheckClientID(pResult->m_ClientID))
 		return;
@@ -1002,5 +1007,6 @@ void CGameContext::ConTopPoints(IConsole::IResult *pResult, void *pUserData)
 
 	if(pSelf->m_apPlayers[pResult->m_ClientID] && g_Config.m_SvUseSQL)
 		pSelf->m_apPlayers[pResult->m_ClientID]->m_LastSQLQuery = pSelf->Server()->Tick();
+*/
 #endif
 }

@@ -2,3 +2,6 @@
 	path = datasrc/languages
 	url = git://github.com/teeworlds/teeworlds-translation.git
 	branch = master
+[submodule "ddnet-libs"]
+	path = ddnet-libs
+	url = https://github.com/ddnet/ddnet-libs
