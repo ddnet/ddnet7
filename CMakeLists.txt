@@ -72,6 +72,7 @@ if(TARGET_OS STREQUAL "windows")
   set(AUTO_DEPENDENCIES_DEFAULT ON)
 endif()
 
+option(MYSQL "Enable mysql support" OFF)
 option(CLIENT "Compile client" ON)
 option(DOWNLOAD_DEPENDENCIES "Download dependencies (only available on Windows)" ${AUTO_DEPENDENCIES_DEFAULT})
 option(DOWNLOAD_GTEST "Download and compile GTest if not found" ${AUTO_DEPENDENCIES_DEFAULT})
@@ -308,6 +309,11 @@ find_package(Crypto)
 find_package(OwnFreetype)
 find_package(Git)
 find_package(GTest)
+if(MYSQL)
+  find_package(MySQL)
+else()
+  set(MYSQL_LIBRARIES)
+endif()
 find_package(Pnglite)
 find_package(SDL2)
 find_package(Threads)
@@ -353,6 +359,9 @@ show_dependency_status("Freetype" FREETYPE)
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   show_dependency_status("Hdiutil" HDIUTIL)
 endif()
+if(MYSQL)
+  show_dependency_status("MySQL" MYSQL)
+endif()
 show_dependency_status("OpenSSL Crypto" CRYPTO)
 show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
@@ -362,6 +371,10 @@ show_dependency_status("Zlib" ZLIB)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile DDNet")
+endif()
+
+if(MYSQL AND NOT(MYSQL_FOUND))
+  message(SEND_ERROR "You must install MySQL to compile the DDNet server with MySQL support")
 endif()
 
 if(CLIENT AND NOT(FREETYPE_FOUND))
@@ -1532,7 +1545,10 @@ else()
 endif()
 
 # Libraries
-set(LIBS_SERVER ${LIBS})
+set(LIBS_SERVER
+  ${LIBS}
+  ${MYSQL_LIBRARIES}
+)
 
 # Target
 set(TARGET_SERVER ${SERVER_EXECUTABLE})
@@ -2017,6 +2033,10 @@ foreach(target ${TARGETS_OWN})
   if(CRYPTO_FOUND)
     target_compile_definitions(${target} PRIVATE CONF_OPENSSL)
     target_include_directories(${target} PRIVATE ${CRYPTO_INCLUDE_DIRS})
+  endif()
+  if(MYSQL)
+    target_compile_definitions(${target} PRIVATE CONF_SQL)
+    target_include_directories(${target} PRIVATE ${MYSQL_INCLUDE_DIRS})
   endif()
 endforeach()
 
