@@ -296,6 +296,17 @@ CServer::CServer() : m_DemoRecorder(&m_SnapshotDelta)
 	m_RconPasswordSet = 0;
 	m_GeneratedRconPassword = 0;
 
+#if defined (CONF_SQL)
+	for (int i = 0; i < MAX_SQLSERVERS; i++)
+	{
+		m_apSqlReadServers[i] = 0;
+		m_apSqlWriteServers[i] = 0;
+	}
+
+	CSqlConnector::SetReadServers(m_apSqlReadServers);
+	CSqlConnector::SetWriteServers(m_apSqlWriteServers);
+#endif
+
 	Init();
 }
 
@@ -1835,6 +1846,13 @@ void CServer::RegisterCommands()
 	Console()->Chain("console_output_level", ConchainConsoleOutputLevelUpdate, this);
 	Console()->Chain("sv_rcon_password", ConchainRconPasswordSet, this);
 
+	// DDRace
+
+#if defined(CONF_SQL)
+	Console()->Register("add_sqlserver", "s['r'|'w'] s[Database] s[Prefix] s[User] s[Password] s[IP] i[Port] ?i[SetUpDatabase ?]", CFGFLAG_SERVER|CFGFLAG_NONTEEHISTORIC, ConAddSqlServer, this, "add a sqlserver");
+	Console()->Register("dump_sqlservers", "s['r'|'w']", CFGFLAG_SERVER, ConDumpSqlServers, this, "dumps all sqlservers readservers = r, writeservers = w");
+#endif
+
 	// register console commands in sub parts
 	m_ServerBan.InitServerBan(Console(), Storage(), this);
 	m_pGameServer->OnConsoleInit();
@@ -1983,3 +2001,81 @@ void CServer::GetClientAddr(int ClientID, NETADDR* pAddr)
 		*pAddr = *m_NetServer.ClientAddr(ClientID);
 	}
 }
+
+#if defined (CONF_SQL)
+
+void CServer::ConAddSqlServer(IConsole::IResult *pResult, void *pUserData)
+{
+	CServer *pSelf = (CServer *)pUserData;
+
+	if (pResult->NumArguments() != 7 && pResult->NumArguments() != 8)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "7 or 8 arguments are required");
+		return;
+	}
+
+	bool ReadOnly;
+	if (str_comp_nocase(pResult->GetString(0), "w") == 0)
+		ReadOnly = false;
+	else if (str_comp_nocase(pResult->GetString(0), "r") == 0)
+		ReadOnly = true;
+	else
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "choose either 'r' for SqlReadServer or 'w' for SqlWriteServer");
+		return;
+	}
+
+	bool SetUpDb = pResult->NumArguments() == 8 ? pResult->GetInteger(7) : true;
+
+	CSqlServer** apSqlServers = ReadOnly ? pSelf->m_apSqlReadServers : pSelf->m_apSqlWriteServers;
+
+	for (int i = 0; i < MAX_SQLSERVERS; i++)
+	{
+		if (!apSqlServers[i])
+		{
+			apSqlServers[i] = new CSqlServer(pResult->GetString(1), pResult->GetString(2), pResult->GetString(3), pResult->GetString(4), pResult->GetString(5), pResult->GetInteger(6), &pSelf->m_GlobalSqlLock, ReadOnly, SetUpDb);
+
+			if(SetUpDb)
+				thread_init(CreateTablesThread, apSqlServers[i], "CreateTables");
+
+			char aBuf[512];
+			str_format(aBuf, sizeof(aBuf), "Added new Sql%sServer: %d: DB: '%s' Prefix: '%s' User: '%s' IP: <{'%s'}> Port: %d", ReadOnly ? "Read" : "Write", i, apSqlServers[i]->GetDatabase(), apSqlServers[i]->GetPrefix(), apSqlServers[i]->GetUser(), apSqlServers[i]->GetIP(), apSqlServers[i]->GetPort());
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+			return;
+		}
+	}
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "failed to add new sqlserver: limit of sqlservers reached");
+}
+
+void CServer::ConDumpSqlServers(IConsole::IResult *pResult, void *pUserData)
+{
+	CServer *pSelf = (CServer *)pUserData;
+
+	bool ReadOnly;
+	if (str_comp_nocase(pResult->GetString(0), "w") == 0)
+		ReadOnly = false;
+	else if (str_comp_nocase(pResult->GetString(0), "r") == 0)
+		ReadOnly = true;
+	else
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "choose either 'r' for SqlReadServer or 'w' for SqlWriteServer");
+		return;
+	}
+
+	CSqlServer** apSqlServers = ReadOnly ? pSelf->m_apSqlReadServers : pSelf->m_apSqlWriteServers;
+
+	for (int i = 0; i < MAX_SQLSERVERS; i++)
+		if (apSqlServers[i])
+		{
+			char aBuf[512];
+			str_format(aBuf, sizeof(aBuf), "SQL-%s %d: DB: '%s' Prefix: '%s' User: '%s' Pass: '%s' IP: <{'%s'}> Port: %d", ReadOnly ? "Read" : "Write", i, apSqlServers[i]->GetDatabase(), apSqlServers[i]->GetPrefix(), apSqlServers[i]->GetUser(), apSqlServers[i]->GetPass(), apSqlServers[i]->GetIP(), apSqlServers[i]->GetPort());
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
+		}
+}
+
+void CServer::CreateTablesThread(void *pData)
+{
+	((CSqlServer *)pData)->CreateTables();
+}
+
+#endif

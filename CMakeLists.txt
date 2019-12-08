@@ -72,8 +72,8 @@ if(TARGET_OS STREQUAL "windows")
   set(AUTO_DEPENDENCIES_DEFAULT ON)
 endif()
 
+option(MYSQL "Enable mysql support" OFF)
 option(CLIENT "Compile client" ON)
-option(DOWNLOAD_DEPENDENCIES "Download dependencies (only available on Windows)" ${AUTO_DEPENDENCIES_DEFAULT})
 option(DOWNLOAD_GTEST "Download and compile GTest if not found" ${AUTO_DEPENDENCIES_DEFAULT})
 option(PREFER_BUNDLED_LIBS "Prefer bundled libraries over system libraries" ${AUTO_DEPENDENCIES_DEFAULT})
 option(DEV "Don't generate stuff necessary for packaging" OFF)
@@ -97,28 +97,6 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 
 set(SERVER_EXECUTABLE DDNet-Server CACHE STRING "Name of the built server executable")
 set(CLIENT_EXECUTABLE DDNet CACHE STRING "Name of the build client executable")
-
-########################################################################
-# Download dependencies
-########################################################################
-
-find_package(PythonInterp)
-if(DOWNLOAD_DEPENDENCIES)
-  if(PYTHON_EXECUTABLE AND TARGET_OS STREQUAL "windows" AND TARGET_BITS)
-    set(DOWNLOADS)
-    foreach(d freetype sdl)
-      if(NOT EXISTS "${PROJECT_SOURCE_DIR}/other/${d}/${TARGET_OS}/lib${TARGET_BITS}")
-        list(APPEND DOWNLOADS ${d})
-      endif()
-    endforeach()
-    if(DOWNLOADS)
-      message(STATUS "Downloading Freetype and SDL 2")
-      execute_process(COMMAND ${PYTHON_EXECUTABLE} scripts/download.py ${DOWNLOADS}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-      )
-    endif()
-  endif()
-endif()
 
 ########################################################################
 # Compiler flags
@@ -264,7 +242,7 @@ function(set_extra_dirs_lib VARIABLE NAME)
     set(TYPE PATHS)
   endif()
   if(TARGET_BITS AND TARGET_OS)
-    set(DIR "other/${NAME}/${TARGET_OS}/lib${TARGET_BITS}")
+    set(DIR "ddnet-libs/${NAME}/${TARGET_OS}/lib${TARGET_BITS}")
     set("${TYPE}_${VARIABLE}_LIBDIR" "${DIR}" PARENT_SCOPE)
     set("EXTRA_${VARIABLE}_LIBDIR" "${DIR}" PARENT_SCOPE)
   endif()
@@ -275,7 +253,7 @@ function(set_extra_dirs_include VARIABLE NAME LIBRARY)
   set("HINTS_${VARIABLE}_INCLUDEDIR" PARENT_SCOPE)
   is_bundled(IS_BUNDLED "${LIBRARY}")
   if(IS_BUNDLED)
-    set("HINTS_${VARIABLE}_INCLUDEDIR" "other/${NAME}/include" "other/${NAME}/include/${TARGET_OS}" PARENT_SCOPE)
+    set("HINTS_${VARIABLE}_INCLUDEDIR" "ddnet-libs/${NAME}/include" "ddnet-libs/${NAME}/include/${TARGET_OS}" PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -308,7 +286,13 @@ find_package(Crypto)
 find_package(OwnFreetype)
 find_package(Git)
 find_package(GTest)
+if(MYSQL)
+  find_package(MySQL)
+else()
+  set(MYSQL_LIBRARIES)
+endif()
 find_package(Pnglite)
+find_package(PythonInterp)
 find_package(SDL2)
 find_package(Threads)
 find_package(Wavpack)
@@ -353,6 +337,9 @@ show_dependency_status("Freetype" FREETYPE)
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   show_dependency_status("Hdiutil" HDIUTIL)
 endif()
+if(MYSQL)
+  show_dependency_status("MySQL" MYSQL)
+endif()
 show_dependency_status("OpenSSL Crypto" CRYPTO)
 show_dependency_status("Pnglite" PNGLITE)
 show_dependency_status("PythonInterp" PYTHONINTERP)
@@ -362,6 +349,10 @@ show_dependency_status("Zlib" ZLIB)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile DDNet")
+endif()
+
+if(MYSQL AND NOT(MYSQL_FOUND))
+  message(SEND_ERROR "You must install MySQL to compile the DDNet server with MySQL support")
 endif()
 
 if(CLIENT AND NOT(FREETYPE_FOUND))
@@ -1264,7 +1255,15 @@ set(GAME_GENERATED_SHARED
 set(DEPS ${DEP_MD5} ${ZLIB_DEP})
 
 # Libraries
-set(LIBS ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES} ${CRYPTO_LIBRARIES} ${PLATFORM_LIBS})
+set(LIBS
+  ${CRYPTO_LIBRARIES}
+  ${WEBSOCKETS_LIBRARIES}
+  ${ZLIB_LIBRARIES}
+  ${PLATFORM_LIBS}
+  # Add pthreads (on non-Windows) at the end, so that other libraries can depend
+  # on it.
+  ${CMAKE_THREAD_LIBS_INIT}
+)
 
 # Targets
 add_library(engine-shared EXCLUDE_FROM_ALL OBJECT ${ENGINE_INTERFACE} ${ENGINE_SHARED} ${ENGINE_GENERATED_SHARED} ${BASE})
@@ -1472,6 +1471,12 @@ set_src(ENGINE_SERVER GLOB src/engine/server
   register.h
   server.cpp
   server.h
+  sql_connector.cpp
+  sql_connector.h
+  sql_server.cpp
+  sql_server.h
+  sql_string_helpers.cpp
+  sql_string_helpers.h
 )
 set_src(GAME_SERVER GLOB_RECURSE src/game/server
   alloc.h
@@ -1506,15 +1511,19 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamecontext.h
   gamecontroller.cpp
   gamecontroller.h
-  gamemodes/ddrace.cpp
-  gamemodes/ddrace.h
+  gamemodes/DDRace.cpp
+  gamemodes/DDRace.h
   gameworld.cpp
   gameworld.h
   player.cpp
   player.h
+  save.cpp
+  save.h
   score.h
   score/file_score.cpp
   score/file_score.h
+  score/sql_score.cpp
+  score/sql_score.h
   teams.cpp
   teams.h
   teehistorian.cpp
@@ -1532,7 +1541,13 @@ else()
 endif()
 
 # Libraries
-set(LIBS_SERVER ${LIBS})
+set(LIBS_SERVER
+  ${LIBS}
+  ${MYSQL_LIBRARIES}
+  # Add pthreads (on non-Windows) at the end, so that other libraries can depend
+  # on it.
+  ${CMAKE_THREAD_LIBS_INIT}
+)
 
 # Target
 set(TARGET_SERVER ${SERVER_EXECUTABLE})
@@ -1749,6 +1764,7 @@ set(CPACK_SOURCE_FILES
   CMakeLists.txt
   cmake/
   datasrc/
+  ddnet-libs/
   license.txt
   other/
   readme.md
@@ -2017,6 +2033,10 @@ foreach(target ${TARGETS_OWN})
   if(CRYPTO_FOUND)
     target_compile_definitions(${target} PRIVATE CONF_OPENSSL)
     target_include_directories(${target} PRIVATE ${CRYPTO_INCLUDE_DIRS})
+  endif()
+  if(MYSQL)
+    target_compile_definitions(${target} PRIVATE CONF_SQL)
+    target_include_directories(${target} PRIVATE ${MYSQL_INCLUDE_DIRS})
   endif()
 endforeach()
 

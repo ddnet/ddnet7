@@ -7,12 +7,12 @@
 #include <vector>
 #include <map>
 
-class CGameControllerDDrace: public IGameController
+class CGameControllerDDRace: public IGameController
 {
 public:
 
-	CGameControllerDDrace(class CGameContext *pGameServer);
-	~CGameControllerDDrace();
+	CGameControllerDDRace(class CGameContext *pGameServer);
+	~CGameControllerDDRace();
 
 	CGameTeams m_Teams;
 

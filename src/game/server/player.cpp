@@ -6,7 +6,7 @@
 #include "gamecontext.h"
 #include "gamecontroller.h"
 #include "player.h"
-#include <game/server/gamemodes/ddrace.h>
+#include <game/server/gamemodes/DDRace.h>
 #include <engine/shared/config.h>
 #include "score.h"
 
@@ -312,7 +312,7 @@ void CPlayer::OnDisconnect()
 {
 	KillCharacter();
 
-	CGameControllerDDrace* Controller = (CGameControllerDDrace*)GameServer()->m_pController;
+	CGameControllerDDRace* Controller = (CGameControllerDDRace*)GameServer()->m_pController;
 	Controller->m_Teams.SetForceCharacterTeam(m_ClientID, 0);
 
 	if (m_Team != TEAM_SPECTATORS)
@@ -511,7 +511,7 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 
 	if (Team == TEAM_SPECTATORS)
 	{
-		CGameControllerDDrace* Controller = (CGameControllerDDrace*)GameServer()->m_pController;
+		CGameControllerDDRace* Controller = (CGameControllerDDRace*)GameServer()->m_pController;
 		Controller->m_Teams.SetForceCharacterTeam(m_ClientID, 0);
 	}
 
@@ -558,7 +558,7 @@ void CPlayer::TryRespawn()
 	if(!GameServer()->m_pController->CanSpawn(m_Team, &SpawnPos))
 		return;
 
-	CGameControllerDDrace* Controller = (CGameControllerDDrace*)GameServer()->m_pController;
+	CGameControllerDDRace* Controller = (CGameControllerDDRace*)GameServer()->m_pController;
 
 	m_WeakHookSpawn = false;
 	m_Spawning = false;
