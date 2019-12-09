@@ -93,7 +93,7 @@ public:
 			else
 				aBuf[0] = 0;
 			char aLogFilename[128];			
-			str_format(aLogFilename, sizeof(aLogFilename), "%s%s.txt", g_Config.m_Logfile, aBuf);
+			str_format(aLogFilename, sizeof(aLogFilename), "%s%s", g_Config.m_Logfile, aBuf);
 			dbg_logger_file(aLogFilename);
 		}
 	}
