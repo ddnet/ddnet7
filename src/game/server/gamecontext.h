@@ -191,6 +191,9 @@ public:
 	void CheckPureTuning();
 	void SendTuningParams(int ClientID, int Zone = 0);
 
+	struct CVoteOptionServer *GetVoteOption(int Index);
+	void ProgressVoteOptions(int ClientID);
+
 	void LoadMapSettings();
 
 	//
