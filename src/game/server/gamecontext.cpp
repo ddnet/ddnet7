@@ -21,7 +21,10 @@
 
 #include "score.h"
 #include "score/file_score.h"
-#include "score/sql_score.h"
+
+#if defined (CONF_SQL)
+	#include "score/sql_score.h"
+#endif
 
 enum
 {
