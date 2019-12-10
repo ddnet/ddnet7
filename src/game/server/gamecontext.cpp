@@ -1942,6 +1942,9 @@ void CGameContext::OnInit()
 	{
 		Tuning()->Set("gun_speed", 1400);
 		Tuning()->Set("gun_curvature", 0);
+		Tuning()->Set("shotgun_speed", 500);
+		Tuning()->Set("shotgun_speeddiff", 0);
+		Tuning()->Set("shotgun_curvature", 0);
 	}
 
 	if (g_Config.m_SvDDRaceTuneReset)
@@ -2545,6 +2548,9 @@ void CGameContext::ResetTuning()
 	m_Tuning = TuningParams;
 	Tuning()->Set("gun_speed", 1400);
 	Tuning()->Set("gun_curvature", 0);
+	Tuning()->Set("shotgun_speed", 500);
+	Tuning()->Set("shotgun_speeddiff", 0);
+	Tuning()->Set("shotgun_curvature", 0);
 	SendTuningParams(-1);
 }
 
