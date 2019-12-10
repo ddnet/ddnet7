@@ -60,6 +60,9 @@ void CGameContext::Construct(int Resetting)
 	m_aDeleteTempfile[0] = 0;
 	m_ChatResponseTargetID = -1;
 	m_TeeHistorianActive = false;
+
+	m_pRandomMapResult = nullptr;
+	m_pMapVoteResult = nullptr;
 }
 
 CGameContext::CGameContext(int Resetting)
@@ -713,6 +716,28 @@ void CGameContext::OnTick()
 			}
 		}
 
+	if(m_pRandomMapResult && m_pRandomMapResult->m_Done)
+	{
+		str_copy(g_Config.m_SvMap, m_pRandomMapResult->m_aMap, sizeof(g_Config.m_SvMap));
+		m_pRandomMapResult = NULL;
+	}
+
+	if(m_pMapVoteResult && m_pMapVoteResult->m_Done)
+	{
+		m_VoteKick = false;
+		m_VoteSpec = false;
+		m_LastMapVote = time_get();
+
+		char aCmd[256];
+		str_format(aCmd, sizeof(aCmd), "sv_reset_file types/%s/flexreset.cfg; change_map \"%s\"", m_pMapVoteResult->m_aServer, m_pMapVoteResult->m_aMap);
+
+		char aChatmsg[512];
+		str_format(aChatmsg, sizeof(aChatmsg), "'%s' called vote to change server option '%s' (%s)", Server()->ClientName(m_pMapVoteResult->m_ClientID), m_pMapVoteResult->m_aMap, "/map");
+
+		CallVote(m_pMapVoteResult->m_ClientID, m_pMapVoteResult->m_aMap, aCmd, "/map", aChatmsg);
+
+		m_pMapVoteResult = NULL;
+	}
 
 #ifdef CONF_DEBUG
 	for(int i = 0; i < MAX_CLIENTS; i++)
@@ -1083,11 +1108,18 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			if(str_comp_nocase(pMsg->m_Type, "option") == 0)
 			{
+				int Authed = Server()->IsAuthed(ClientID);
 				CVoteOptionServer *pOption = m_pVoteOptionFirst;
 				while(pOption)
 				{
 					if(str_comp_nocase(pMsg->m_Value, pOption->m_aDescription) == 0)
 					{
+						if(!Authed && (str_startswith(pOption->m_aCommand, "sv_map ") || str_startswith(pOption->m_aCommand, "change_map ") || str_startswith(pOption->m_aCommand, "random_map") || str_startswith(pOption->m_aCommand, "random_unfinished_map")) && time_get() < m_LastMapVote + (time_freq() * g_Config.m_SvVoteMapTimeDelay))
+						{
+							str_format(aChatmsg, sizeof(aChatmsg), "There's a %d second delay between map-votes, please wait %d seconds.", g_Config.m_SvVoteMapTimeDelay, (int)(((m_LastMapVote+(g_Config.m_SvVoteMapTimeDelay * time_freq()))/time_freq())-(time_get()/time_freq())));
+							SendChatTarget(ClientID, aChatmsg);
+							return;
+						}
 						str_format(aDesc, sizeof(aDesc), "%s", pOption->m_aDescription);
 						str_format(aCmd, sizeof(aCmd), "%s", pOption->m_aCommand);
 						if(pMsg->m_Force)
@@ -1893,6 +1925,11 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("remove_vote", "s[name]", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r['yes'|'no']", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
+
+	// DDRace
+
+	Console()->Register("random_map", "?i[stars]", CFGFLAG_SERVER, ConRandomMap, this, "Random map");
+	Console()->Register("random_unfinished_map", "?i[stars]", CFGFLAG_SERVER, ConRandomUnfinishedMap, this, "Random unfinished map");
 }
 
 void CGameContext::OnInit()
@@ -2631,4 +2668,44 @@ int CGameContext::GetPickupType(int Type, int Subtype)
 		return PICKUP_NINJA;
 	}
 	return Subtype;
+}
+
+// DDRace
+
+void CGameContext::CallVote(int ClientID, const char *pDesc, const char *pCmd, const char *pReason, const char *pChatmsg)
+{
+	// check if a vote is already running
+	if(m_VoteCloseTime)
+		return;
+
+	int64 Now = Server()->Tick();
+	CPlayer *pPlayer = m_apPlayers[ClientID];
+
+	if(!pPlayer)
+		return;
+
+	SendChat(-1, CHAT_ALL, -1, pChatmsg);
+	StartVote(pDesc, pCmd, pReason);
+	pPlayer->m_Vote = 1;
+	pPlayer->m_VotePos = m_VotePos = 1;
+	m_VoteCreator = ClientID;
+	pPlayer->m_LastVoteCall = Now;
+}
+
+void CGameContext::ConRandomMap(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	int Stars = pResult->NumArguments() ? pResult->GetInteger(0) : -1;
+
+	pSelf->m_pScore->RandomMap(&pSelf->m_pRandomMapResult, pSelf->m_VoteCreator, Stars);
+}
+
+void CGameContext::ConRandomUnfinishedMap(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	int Stars = pResult->NumArguments() ? pResult->GetInteger(0) : -1;
+
+	pSelf->m_pScore->RandomUnfinishedMap(&pSelf->m_pRandomMapResult, pSelf->m_VoteCreator, Stars);
 }

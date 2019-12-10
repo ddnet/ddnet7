@@ -49,6 +49,9 @@ enum
 	NUM_TUNEZONES = 256
 };
 
+class CRandomMapResult;
+class CMapVoteResult;
+
 class CGameContext : public IGameServer
 {
 	IServer *m_pServer;
@@ -64,6 +67,9 @@ class CGameContext : public IGameServer
 	CTeeHistorian m_TeeHistorian;
 	IOHANDLE m_TeeHistorianFile;
 	CUuid m_GameUuid;
+
+	std::shared_ptr<CRandomMapResult> m_pRandomMapResult;
+	std::shared_ptr<CMapVoteResult> m_pMapVoteResult;
 
 	static void CommandCallback(int ClientID, int FlagMask, const char *pCmd, IConsole::IResult *pResult, void *pUser);
 	static void TeeHistorianWrite(const void *pData, int DataSize, void *pUser);
@@ -91,6 +97,11 @@ class CGameContext : public IGameServer
 	static void ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainSettingUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
+
+	// DDRace
+
+	static void ConRandomMap(IConsole::IResult *pResult, void *pUserData);
+	static void ConRandomUnfinishedMap(IConsole::IResult *pResult, void *pUserData);
 
 	CGameContext(int Resetting);
 	void Construct(int Resetting);
@@ -180,6 +191,9 @@ public:
 	void SendMotd(int ClientID);
 	void SendSettings(int ClientID);
 	void SendSkinChange(int ClientID, int TargetID);
+
+	// DDRace
+	void CallVote(int ClientID, const char *aDesc, const char *aCmd, const char *pReason, const char *aChatmsg);
 
 	void List(int ClientID, const char* filter);
 
