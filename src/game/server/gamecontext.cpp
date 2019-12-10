@@ -1985,6 +1985,9 @@ void CGameContext::OnInit()
 		TuningList()[i] = TuningParams;
 		TuningList()[i].Set("gun_curvature", 0);
 		TuningList()[i].Set("gun_speed", 1400);
+		TuningList()[i].Set("shotgun_curvature", 0);
+		TuningList()[i].Set("shotgun_speed", 500);
+		TuningList()[i].Set("shotgun_speeddiff", 0);
 	}
 
 	for (int i = 0; i < NUM_TUNEZONES; i++)
