@@ -16,27 +16,25 @@ CSaveTee::~CSaveTee()
 
 void CSaveTee::save(CCharacter *pChr)
 {
-	// TODO: save
-	/*
-	str_copy(m_name, pChr->m_pPlayer->Server()->ClientName(pChr->m_pPlayer->GetCID()), sizeof(m_name));
+	str_copy(m_name, pChr->Server()->ClientName(pChr->GetPlayer()->GetCID()), sizeof(m_name));
 
-	m_Alive = pChr->m_Alive;
-	m_Paused = abs(pChr->m_pPlayer->IsPaused());
-	m_NeededFaketuning = pChr->m_NeededFaketuning;
+	m_Alive = pChr->IsAlive();
+	m_Paused = abs(pChr->GetPlayer()->IsPaused());
+	m_NeededFaketuning = pChr->NeededFaketuning();
 
-	m_TeeFinished = pChr->Teams()->TeeFinished(pChr->m_pPlayer->GetCID());
-	m_IsSolo = pChr->m_Solo;
+	m_TeeFinished = pChr->Teams()->TeeFinished(pChr->GetPlayer()->GetCID());
+	m_IsSolo = pChr->IsSolo();
 
 	for(int i = 0; i< NUM_WEAPONS; i++)
 	{
-		m_aWeapons[i].m_AmmoRegenStart = pChr->m_aWeapons[i].m_AmmoRegenStart;
-		m_aWeapons[i].m_Ammo = pChr->m_aWeapons[i].m_Ammo;
-		m_aWeapons[i].m_Ammocost = pChr->m_aWeapons[i].m_Ammocost;
-		m_aWeapons[i].m_Got = pChr->m_aWeapons[i].m_Got;
+		m_aWeapons[i].m_AmmoRegenStart = pChr->GetWeaponAmmoRegenStart(i);
+		m_aWeapons[i].m_Ammo = pChr->GetWeaponAmmo(i);
+		m_aWeapons[i].m_Ammocost = pChr->GetWeaponAmmocost(i);
+		m_aWeapons[i].m_Got = pChr->GetWeaponGot(i);
 	}
 
-	m_LastWeapon = pChr->m_LastWeapon;
-	m_QueuedWeapon = pChr->m_QueuedWeapon;
+	m_LastWeapon = pChr->GetLastWeapon();
+	m_QueuedWeapon = pChr->GetQueuedWeapon();
 
 	m_SuperJump = pChr->m_SuperJump;
 	m_Jetpack = pChr->m_Jetpack;
@@ -55,7 +53,7 @@ void CSaveTee::save(CCharacter *pChr)
 	if(pChr->m_StartTime)
 		m_Time = pChr->Server()->Tick() - pChr->m_StartTime + 60 * pChr->Server()->TickSpeed();
 
-	m_Pos = pChr->m_Pos;
+	m_Pos = pChr->GetPos();
 	m_PrevPos = pChr->m_PrevPos;
 	m_TeleCheckpoint = pChr->m_TeleCheckpoint;
 	m_LastPenalty = pChr->m_LastPenalty;
@@ -69,55 +67,52 @@ void CSaveTee::save(CCharacter *pChr)
 	for(int i = 0; i < 25; i++)
 		m_CpCurrent[i] = pChr->m_CpCurrent[i];
 
-	m_NotEligibleForFinish = pChr->m_pPlayer->m_NotEligibleForFinish;
+	m_NotEligibleForFinish = pChr->GetPlayer()->m_NotEligibleForFinish;
 
-	m_HasTelegunGun = pChr->m_Core.m_HasTelegunGun;
-	m_HasTelegunGrenade = pChr->m_Core.m_HasTelegunGrenade;
-	m_HasTelegunLaser = pChr->m_Core.m_HasTelegunLaser;
+	m_HasTelegunGun = pChr->GetCore().m_HasTelegunGun;
+	m_HasTelegunGrenade = pChr->GetCore().m_HasTelegunGrenade;
+	m_HasTelegunLaser = pChr->GetCore().m_HasTelegunLaser;
 
 	// Core
-	m_CorePos = pChr->m_Core.m_Pos;
-	m_Vel = pChr->m_Core.m_Vel;
-	m_Hook = pChr->m_Core.m_Hook;
-	m_Collision = pChr->m_Core.m_Collision;
-	m_ActiveWeapon = pChr->m_Core.m_ActiveWeapon;
-	m_Jumped = pChr->m_Core.m_Jumped;
-	m_JumpedTotal = pChr->m_Core.m_JumpedTotal;
-	m_Jumps = pChr->m_Core.m_Jumps;
-	m_HookPos = pChr->m_Core.m_HookPos;
-	m_HookDir = pChr->m_Core.m_HookDir;
-	m_HookTeleBase = pChr->m_Core.m_HookTeleBase;
+	m_CorePos = pChr->GetCore().m_Pos;
+	m_Vel = pChr->GetCore().m_Vel;
+	m_Hook = pChr->GetCore().m_Hook;
+	m_Collision = pChr->GetCore().m_Collision;
+	m_ActiveWeapon = pChr->GetCore().m_ActiveWeapon;
+	m_Jumped = pChr->GetCore().m_Jumped;
+	m_JumpedTotal = pChr->GetCore().m_JumpedTotal;
+	m_Jumps = pChr->GetCore().m_Jumps;
+	m_HookPos = pChr->GetCore().m_HookPos;
+	m_HookDir = pChr->GetCore().m_HookDir;
+	m_HookTeleBase = pChr->GetCore().m_HookTeleBase;
 
-	m_HookTick = pChr->m_Core.m_HookTick;
+	m_HookTick = pChr->GetCore().m_HookTick;
 
-	m_HookState = pChr->m_Core.m_HookState;
+	m_HookState = pChr->GetCore().m_HookState;
 
 	FormatUuid(pChr->GameServer()->GameUuid(), aGameUuid, sizeof(aGameUuid));
-	*/
 }
 
 void CSaveTee::load(CCharacter *pChr, int Team)
 {
-	// TODO: save
-	/*
-	pChr->m_pPlayer->Pause(m_Paused, true);
+	pChr->GetPlayer()->Pause(m_Paused, true);
 
-	pChr->m_Alive = m_Alive;
-	pChr->m_NeededFaketuning = m_NeededFaketuning;
+	pChr->SetAlive(m_Alive);
+	pChr->SetNeededFaketuning(m_NeededFaketuning);
 
-	pChr->Teams()->SetForceCharacterTeam(pChr->m_pPlayer->GetCID(), Team);
-	pChr->Teams()->SetFinished(pChr->m_pPlayer->GetCID(), m_TeeFinished);
+	pChr->Teams()->SetForceCharacterTeam(pChr->GetPlayer()->GetCID(), Team);
+	pChr->Teams()->SetFinished(pChr->GetPlayer()->GetCID(), m_TeeFinished);
 
 	for(int i = 0; i< NUM_WEAPONS; i++)
 	{
-		pChr->m_aWeapons[i].m_AmmoRegenStart = m_aWeapons[i].m_AmmoRegenStart;
-		pChr->m_aWeapons[i].m_Ammo = m_aWeapons[i].m_Ammo;
-		pChr->m_aWeapons[i].m_Ammocost = m_aWeapons[i].m_Ammocost;
-		pChr->m_aWeapons[i].m_Got = m_aWeapons[i].m_Got;
+		pChr->SetWeaponAmmoRegenStart(i, m_aWeapons[i].m_AmmoRegenStart);
+		pChr->SetWeaponAmmo(i, m_aWeapons[i].m_Ammo);
+		pChr->SetWeaponAmmocost(i, m_aWeapons[i].m_Ammocost);
+		pChr->SetWeaponGot(i, m_aWeapons[i].m_Got);
 	}
 
-	pChr->m_LastWeapon = m_LastWeapon;
-	pChr->m_QueuedWeapon = m_QueuedWeapon;
+	pChr->SetLastWeapon(m_LastWeapon);
+	pChr->SetQueuedWeapon(m_QueuedWeapon);
 
 	pChr->m_SuperJump = m_SuperJump;
 	pChr->m_Jetpack = m_Jetpack;
@@ -136,8 +131,8 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 	if(m_Time)
 		pChr->m_StartTime = pChr->Server()->Tick() - m_Time;
 
-	pChr->m_Pos = m_Pos;
-	pChr->m_PrevPos = m_PrevPos;
+	pChr->SetPos(m_Pos);
+	pChr->SetPrevPos(m_PrevPos);
 	pChr->m_TeleCheckpoint = m_TeleCheckpoint;
 	pChr->m_LastPenalty = m_LastPenalty;
 
@@ -150,39 +145,38 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 	for(int i = 0; i < 25; i++)
 		pChr->m_CpCurrent[i] = m_CpCurrent[i];
 
-	pChr->m_pPlayer->m_NotEligibleForFinish = pChr->m_pPlayer->m_NotEligibleForFinish || m_NotEligibleForFinish;
+	pChr->GetPlayer()->m_NotEligibleForFinish = pChr->GetPlayer()->m_NotEligibleForFinish || m_NotEligibleForFinish;
 
-	pChr->m_Core.m_HasTelegunGun = m_HasTelegunGun;
-	pChr->m_Core.m_HasTelegunLaser = m_HasTelegunLaser;
-	pChr->m_Core.m_HasTelegunGrenade = m_HasTelegunGrenade;
+	pChr->SetTelegunGun(m_HasTelegunGun);
+	pChr->SetTelegunLaser(m_HasTelegunLaser);
+	pChr->SetTelegunGrenade(m_HasTelegunGrenade);
 
 	// Core
-	pChr->m_Core.m_Pos = m_CorePos;
-	pChr->m_Core.m_Vel = m_Vel;
-	pChr->m_Core.m_Hook = m_Hook;
-	pChr->m_Core.m_Collision = m_Collision;
-	pChr->m_Core.m_ActiveWeapon = m_ActiveWeapon;
-	pChr->m_Core.m_Jumped = m_Jumped;
-	pChr->m_Core.m_JumpedTotal = m_JumpedTotal;
-	pChr->m_Core.m_Jumps = m_Jumps;
-	pChr->m_Core.m_HookPos = m_HookPos;
-	pChr->m_Core.m_HookDir = m_HookDir;
-	pChr->m_Core.m_HookTeleBase = m_HookTeleBase;
+	pChr->SetCorePos(m_CorePos);
+	pChr->SetCoreVel(m_Vel);
+	pChr->SetCoreHook(m_Hook);
+	pChr->SetCoreCollision(m_Collision);
+	pChr->SetCoreActiveWeapon(m_ActiveWeapon);
+	pChr->SetCoreJumped(m_Jumped);
+	pChr->SetCoreJumpedTotal(m_JumpedTotal);
+	pChr->SetCoreJumps(m_Jumps);
+	pChr->SetCoreHookPos(m_HookPos);
+	pChr->SetCoreHookDir(m_HookDir);
+	pChr->SetCoreHookTeleBase(m_HookTeleBase);
 
-	pChr->m_Core.m_HookTick = m_HookTick;
+	pChr->SetCoreHookTick(m_HookTick);
 
 	if(m_HookState == HOOK_GRABBED)
 	{
-		pChr->m_Core.m_HookState = HOOK_FLYING;
-		pChr->m_Core.m_HookedPlayer = -1;
+		pChr->SetCoreHookState(HOOK_FLYING);
+		pChr->SetCoreHookedPlayer(-1);
 	}
 	else
 	{
-		pChr->m_Core.m_HookState = m_HookState;
+		pChr->SetCoreHookState(m_HookState);
 	}
 
 	pChr->SetSolo(m_IsSolo);
-	*/
 }
 
 char* CSaveTee::GetString()
@@ -231,8 +225,6 @@ CSaveTeam::~CSaveTeam()
 
 int CSaveTeam::save(int Team)
 {
-	// TODO: save
-	/*
 	if(g_Config.m_SvTeam == 3 || (Team > 0 && Team < MAX_CLIENTS))
 	{
 		CGameTeams* Teams = &(((CGameControllerDDRace*)m_pController)->m_Teams);
@@ -285,14 +277,10 @@ int CSaveTeam::save(int Team)
 	}
 	else
 		return 1;
-	*/
-	return 1;
 }
 
 int CSaveTeam::load(int Team)
 {
-	// TODO: save
-	/*
 	if(Team <= 0 || Team >= MAX_CLIENTS)
 		return 1;
 
@@ -341,14 +329,10 @@ int CSaveTeam::load(int Team)
 			m_pController->GameServer()->Collision()->m_pSwitchers[i].m_Type[Team] = m_Switchers[i].m_Type;
 		}
 	return 0;
-	*/
-	return 1;
 }
 
 int CSaveTeam::MatchPlayer(char name[16])
 {
-	// TODO: save
-	/*
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(str_comp(m_pController->Server()->ClientName(i), name) == 0)
@@ -356,14 +340,11 @@ int CSaveTeam::MatchPlayer(char name[16])
 			return i;
 		}
 	}
-	*/
 	return -1;
 }
 
 CCharacter* CSaveTeam::MatchCharacter(char name[16], int SaveID)
 {
-	// TODO: save
-	/*
 	int ID = MatchPlayer(name);
 	if(ID >= 0 && m_pController->GameServer()->m_apPlayers[ID])
 	{
@@ -372,7 +353,6 @@ CCharacter* CSaveTeam::MatchCharacter(char name[16], int SaveID)
 		else
 			return m_pController->GameServer()->m_apPlayers[ID]->ForceSpawn(SavedTees[SaveID].GetPos());
 	}
-	*/
 	return 0;
 }
 

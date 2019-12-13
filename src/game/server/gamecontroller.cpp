@@ -379,7 +379,7 @@ void IGameController::Snap(int SnappingClient)
 		return;
 
 	CCharacter* pSnappingChar = GameServer()->GetPlayerChar(SnappingClient);
-	if (pSnappingChar && pSnappingChar->m_DDraceState == DDRACE_STARTED)
+	if (pSnappingChar && pSnappingChar->m_DDRaceState == DDRACE_STARTED)
 		pGameData->m_GameStartTick = pSnappingChar->m_StartTime;
 	else
 		pGameData->m_GameStartTick = m_GameStartTick;

@@ -1375,8 +1375,6 @@ bool CSqlScore::RandomUnfinishedMapThread(CSqlServer* pSqlServer, const CSqlData
 
 void CSqlScore::SaveTeam(int Team, const char* Code, int ClientID, const char* Server)
 {
-	// TODO: save
-	/*
 	if((g_Config.m_SvTeam == 3 || (Team > 0 && Team < MAX_CLIENTS)) && ((CGameControllerDDRace*)(GameServer()->m_pController))->m_Teams.Count(Team) > 0)
 	{
 		if(((CGameControllerDDRace*)(GameServer()->m_pController))->m_Teams.GetSaving(Team))
@@ -1396,13 +1394,10 @@ void CSqlScore::SaveTeam(int Team, const char* Code, int ClientID, const char* S
 	str_copy(Tmp->m_Server, Server, sizeof(Tmp->m_Server));
 
 	thread_init_and_detach(ExecSqlFunc, new CSqlExecData(SaveTeamThread, Tmp, false), "save team");
-	*/
 }
 
 bool CSqlScore::SaveTeamThread(CSqlServer* pSqlServer, const CSqlData *pGameData, bool HandleFailure)
 {
-	// TODO: save
-	/*
 	const CSqlTeamSave *pData = dynamic_cast<const CSqlTeamSave *>(pGameData);
 
 	try
@@ -1520,26 +1515,19 @@ bool CSqlScore::SaveTeamThread(CSqlServer* pSqlServer, const CSqlData *pGameData
 
 	pSqlServer->executeSql("unlock tables;");
 	return true;
-	*/
-	return false;
 }
 
 void CSqlScore::LoadTeam(const char* Code, int ClientID)
 {
-	// TODO: save
-	/*
 	CSqlTeamLoad *Tmp = new CSqlTeamLoad();
 	Tmp->m_Code = Code;
 	Tmp->m_ClientID = ClientID;
 
 	thread_init_and_detach(ExecSqlFunc, new CSqlExecData(LoadTeamThread, Tmp), "load team");
-	*/
 }
 
 bool CSqlScore::LoadTeamThread(CSqlServer* pSqlServer, const CSqlData *pGameData, bool HandleFailure)
 {
-	// TODO: save
-	/*
 	const CSqlTeamLoad *pData = dynamic_cast<const CSqlTeamLoad *>(pGameData);
 
 	if (HandleFailure)
@@ -1657,7 +1645,6 @@ bool CSqlScore::LoadTeamThread(CSqlServer* pSqlServer, const CSqlData *pGameData
 		dbg_msg("sql", "WARNING: Aborted loading team due to reload/change of map.");
 		return true;
 	}
-	*/
 	return false;
 }
 

@@ -35,6 +35,7 @@ public:
 
 	void SetWeapon(int W);
 	void SetSolo(bool Solo);
+	bool IsSolo() { return m_Solo; }
 	void HandleWeaponSwitch();
 	void DoWeaponSwitch();
 
@@ -83,6 +84,7 @@ private:
 	{
 		int m_AmmoRegenStart;
 		int m_Ammo;
+		int m_Ammocost; // TODO: DDNet7 remove this https://github.com/teeworlds/teeworlds/commit/c9bdc32fc086be241f4be420566d7a02a49f203f
 		bool m_Got;
 
 	} m_aWeapons[NUM_WEAPONS];
@@ -134,7 +136,7 @@ private:
 
 	// DDrace
 
-
+	int m_NeededFaketuning; // TODO: DDNet7 implement this https://github.com/ddnet/ddnet/commit/92e0b5fe3c0471ae5e2a71e7a6794fb7df71380a
 	void HandleTiles(int Index);
 	float m_Time;
 	int m_LastBroadcast;
@@ -157,7 +159,7 @@ public:
 	bool Freeze();
 	bool UnFreeze();
 	void GiveAllWeapons();
-	int m_DDraceState;
+	int m_DDRaceState;
 	int Team();
 	bool CanCollide(int ClientID);
 	bool SameTeam(int ClientID);
@@ -236,6 +238,8 @@ public:
 	int m_StrongWeakID;
 
 	// Setters/Getters because i don't want to modify vanilla vars access modifiers
+	int NeededFaketuning() { return m_NeededFaketuning; }
+	void SetNeededFaketuning(int Tuning) { m_NeededFaketuning = Tuning; }
 	int GetLastWeapon() { return m_LastWeapon; };
 	void SetLastWeapon(int LastWeap) { m_LastWeapon = LastWeap; };
 	int GetActiveWeapon() { return m_ActiveWeapon; };
@@ -246,18 +250,48 @@ public:
 	CCharacterCore GetCore() { return m_Core; };
 	void SetCore(CCharacterCore Core) { m_Core = Core; };
 	CCharacterCore* Core() { return &m_Core; };
+	int GetQueuedWeapon() { return m_QueuedWeapon; };
+	void SetQueuedWeapon(int Weapon) { m_QueuedWeapon = Weapon; };
 	bool GetWeaponGot(int Type) { return m_aWeapons[Type].m_Got; };
 	void SetWeaponGot(int Type, bool Value) { m_aWeapons[Type].m_Got = Value; };
+	int GetWeaponAmmoRegenStart(int Type) { return m_aWeapons[Type].m_AmmoRegenStart; };
+	void SetWeaponAmmoRegenStart(int Type, int Value) { m_aWeapons[Type].m_AmmoRegenStart = Value; };
 	int GetWeaponAmmo(int Type) { return m_aWeapons[Type].m_Ammo; };
 	void SetWeaponAmmo(int Type, int Value) { m_aWeapons[Type].m_Ammo = Value; };
-	bool IsAlive() { return m_Alive; };
+	int GetWeaponAmmocost(int Type) { return m_aWeapons[Type].m_Ammocost; };
+	void SetWeaponAmmocost(int Type, int Value) { m_aWeapons[Type].m_Ammocost = Value; };
 	void SetEmoteType(int EmoteType) { m_EmoteType = EmoteType; };
 	void SetEmoteStop(int EmoteStop) { m_EmoteStop = EmoteStop; };
 	void SetNinjaActivationDir(vec2 ActivationDir) { m_Ninja.m_ActivationDir = ActivationDir; };
 	void SetNinjaActivationTick(int ActivationTick) { m_Ninja.m_ActivationTick = ActivationTick; };
 	void SetNinjaCurrentMoveTime(int CurrentMoveTime) { m_Ninja.m_CurrentMoveTime = CurrentMoveTime; };
+	void SetAlive(bool Alive) { m_Alive = Alive; }
 
 	void SetPos(vec2 Pos) { m_Pos = Pos; };
+	void SetPrevPos(vec2 PrevPos) { m_PrevPos = PrevPos; };
+
+	void SetCoreHook(int Hook) { m_Core.m_Hook = Hook; }
+	void SetCoreCollision(int Collision) { m_Core.m_Collision = Collision; }
+	void SetCoreActiveWeapon(int ActiveWeapon) { m_Core.m_ActiveWeapon = ActiveWeapon; }
+	void SetCoreJumped(int Jumped) { m_Core.m_Jumped = Jumped; }
+	void SetCoreJumpedTotal(int JumpedTotal) { m_Core.m_JumpedTotal = JumpedTotal; }
+	void SetCoreJumps(int Jumps) { m_Core.m_Jumps = Jumps; }
+	void SetCoreHookTick(int HookTick) { m_Core.m_HookTick = HookTick; }
+	void SetCoreHookedPlayer(int HookedPlayer) { m_Core.m_HookedPlayer = HookedPlayer; }
+	void SetCoreHookState(int HookState) { m_Core.m_HookState = HookState; }
+	void SetCoreHookPos(vec2 HookPos) { m_Core.m_HookPos = HookPos; }
+	void SetCoreHookDir(vec2 HookDir) { m_Core.m_HookDir = HookDir; }
+	void SetCoreHookTeleBase(vec2 HookTeleBase) { m_Core.m_HookTeleBase = HookTeleBase; }
+
+	bool HasTelegunGun() { return m_Core.m_HasTelegunGun; };
+	bool HasTelegunGrenade() { return m_Core.m_HasTelegunGrenade; };
+	bool HasTelegunLaser() { return m_Core.m_HasTelegunLaser; };
+	void SetTelegunGun(bool Value) { m_Core.m_HasTelegunGun = Value; };
+	void SetTelegunGrenade(bool Value) { m_Core.m_HasTelegunGrenade = Value; };
+	void SetTelegunLaser(bool Value) { m_Core.m_HasTelegunLaser = Value; };
+
+	void SetCorePos(vec2 Pos) { m_Core.m_Pos = Pos; };
+	void SetCoreVel(vec2 Vel) { m_Core.m_Vel = Vel; };
 };
 
 enum
