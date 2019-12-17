@@ -110,6 +110,8 @@ public:
 	virtual const char *NetVersionHashUsed() const = 0;
 	virtual const char *NetVersionHashReal() const = 0;
 
+	virtual bool TimeScore() const { return false; }
+
 	virtual void OnClientEngineJoin(int ClientID) = 0;
 	virtual void OnClientEngineDrop(int ClientID, const char *pReason) = 0;
 };
