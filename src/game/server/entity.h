@@ -29,6 +29,10 @@ private:
 	int m_ID;
 	int m_ObjType;
 
+	/* World Hooks */
+	void OnInsert(CGameWorld *pWorld);
+	void OnRemove();
+
 	/*
 		Variable: m_ProximityRadius
 			Contains the physical size of the entity.
@@ -58,9 +62,7 @@ public:
 	virtual ~CEntity() {};
 
 	/* World Hooks */
-	void OnInsert(CGameWorld *pWorld);
 	virtual void PostInsert() {};
-	void OnRemove();
 	virtual void PreRemove() {};
 
 	/* Objects */
