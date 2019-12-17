@@ -6,15 +6,18 @@
 #include "character.h"
 #include "laser.h"
 
-CLaser::CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_LASER, Pos)
+CLaser::CLaser(vec2 Pos, vec2 Direction, float StartEnergy, int Owner)
+: CEntity(CGameWorld::ENTTYPE_LASER, Pos)
 {
 	m_Owner = Owner;
 	m_Energy = StartEnergy;
 	m_Dir = Direction;
 	m_Bounces = 0;
 	m_EvalTick = 0;
-	GameWorld()->InsertEntity(this);
+}
+
+void CLaser::PostInsert()
+{
 	DoBounce();
 }
 

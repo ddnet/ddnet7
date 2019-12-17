@@ -6,23 +6,25 @@
 #include "character.h"
 #include "projectile.h"
 
-CProjectile::CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
+CProjectile::CProjectile(int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon)
-: CEntity(pGameWorld, CGameWorld::ENTTYPE_PROJECTILE, Pos)
+: CEntity(CGameWorld::ENTTYPE_PROJECTILE, Pos)
 {
 	m_Type = Type;
 	m_Direction = Dir;
 	m_LifeSpan = Span;
 	m_Owner = Owner;
-	m_OwnerTeam = GameServer()->m_apPlayers[Owner]->GetTeam();
 	m_Force = Force;
 	m_Damage = Damage;
 	m_SoundImpact = SoundImpact;
 	m_Weapon = Weapon;
-	m_StartTick = Server()->Tick();
 	m_Explosive = Explosive;
+}
 
-	GameWorld()->InsertEntity(this);
+void CProjectile::PostInsert()
+{
+	m_OwnerTeam = GameServer()->m_apPlayers[m_Owner]->GetTeam();
+	m_StartTick = Server()->Tick();
 }
 
 void CProjectile::Reset()

@@ -52,10 +52,16 @@ protected:
 
 public:
 	/* Constructor */
-	CEntity(CGameWorld *pGameWorld, int Objtype, vec2 Pos, int ProximityRadius=0);
+	CEntity(int Objtype, vec2 Pos, int ProximityRadius=0);
 
 	/* Destructor */
-	virtual ~CEntity();
+	virtual ~CEntity() {};
+
+	/* World Hooks */
+	void OnInsert(CGameWorld *pWorld);
+	virtual void PostInsert() {};
+	void OnRemove();
+	virtual void PreRemove() {};
 
 	/* Objects */
 	class CGameWorld *GameWorld()		{ return m_pGameWorld; }

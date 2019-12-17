@@ -8,8 +8,9 @@
 class CLaser : public CEntity
 {
 public:
-	CLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, float StartEnergy, int Owner);
+	CLaser(vec2 Pos, vec2 Direction, float StartEnergy, int Owner);
 
+	virtual void PostInsert();
 	virtual void Reset();
 	virtual void Tick();
 	virtual void TickPaused();

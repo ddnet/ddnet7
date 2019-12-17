@@ -42,8 +42,8 @@ CInputCount CountInput(int Prev, int Cur)
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 // Character, "physical" player's part
-CCharacter::CCharacter(CGameWorld *pWorld)
-: CEntity(pWorld, CGameWorld::ENTTYPE_CHARACTER, vec2(0, 0), ms_PhysSize)
+CCharacter::CCharacter()
+: CEntity(CGameWorld::ENTTYPE_CHARACTER, vec2(0, 0), ms_PhysSize)
 {
 	m_Health = 0;
 	m_Armor = 0;
@@ -68,20 +68,27 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Pos = Pos;
 
 	m_Core.Reset();
-	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision());
 	m_Core.m_Pos = m_Pos;
-	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
 
 	m_ReckoningTick = 0;
 	mem_zero(&m_SendCore, sizeof(m_SendCore));
 	mem_zero(&m_ReckoningCore, sizeof(m_ReckoningCore));
 
-	GameWorld()->InsertEntity(this);
-	m_Alive = true;
-
-	GameServer()->m_pController->OnCharacterSpawn(this);
-
 	return true;
+}
+
+void CCharacter::PostInsert()
+{
+	m_Core.Init(&GameWorld()->m_Core, GameServer()->Collision());
+	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = &m_Core;
+
+	m_Alive = true;
+	GameServer()->m_pController->OnCharacterSpawn(this);
+}
+
+void CCharacter::PreRemove()
+{
+	GameWorld()->m_Core.m_apCharacters[m_pPlayer->GetCID()] = 0;
 }
 
 void CCharacter::Destroy()
@@ -341,13 +348,14 @@ void CCharacter::FireWeapon()
 
 		case WEAPON_GUN:
 		{
-			new CProjectile(GameWorld(), WEAPON_GUN,
+			CProjectile *pProj = new CProjectile(WEAPON_GUN,
 				m_pPlayer->GetCID(),
 				ProjStartPos,
 				Direction,
 				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime),
 				g_pData->m_Weapons.m_Gun.m_pBase->m_Damage, false, 0, -1, WEAPON_GUN);
 
+			GameWorld()->InsertEntity(pProj);
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
 
@@ -362,12 +370,14 @@ void CCharacter::FireWeapon()
 				a += Spreading[i+2];
 				float v = 1-(absolute(i)/(float)ShotSpread);
 				float Speed = mix((float)GameServer()->Tuning()->m_ShotgunSpeeddiff, 1.0f, v);
-				new CProjectile(GameWorld(), WEAPON_SHOTGUN,
+				CProjectile *pProj = new CProjectile(WEAPON_SHOTGUN,
 					m_pPlayer->GetCID(),
 					ProjStartPos,
 					vec2(cosf(a), sinf(a))*Speed,
 					(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_ShotgunLifetime),
 					g_pData->m_Weapons.m_Shotgun.m_pBase->m_Damage, false, 0, -1, WEAPON_SHOTGUN);
+
+				GameWorld()->InsertEntity(pProj);
 			}
 
 			GameServer()->CreateSound(m_Pos, SOUND_SHOTGUN_FIRE);
@@ -375,19 +385,22 @@ void CCharacter::FireWeapon()
 
 		case WEAPON_GRENADE:
 		{
-			new CProjectile(GameWorld(), WEAPON_GRENADE,
+			CProjectile *pProj = new CProjectile(WEAPON_GRENADE,
 				m_pPlayer->GetCID(),
 				ProjStartPos,
 				Direction,
 				(int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GrenadeLifetime),
 				g_pData->m_Weapons.m_Grenade.m_pBase->m_Damage, true, 0, SOUND_GRENADE_EXPLODE, WEAPON_GRENADE);
 
+			GameWorld()->InsertEntity(pProj);
 			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_FIRE);
 		} break;
 
 		case WEAPON_LASER:
 		{
-			new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
+			CLaser *pLaser = new CLaser(m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID());
+
+			GameWorld()->InsertEntity(pLaser);
 			GameServer()->CreateSound(m_Pos, SOUND_LASER_FIRE);
 		} break;
 

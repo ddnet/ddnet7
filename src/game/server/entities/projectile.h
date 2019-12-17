@@ -12,7 +12,7 @@ enum
 class CProjectile : public CEntity
 {
 public:
-	CProjectile(CGameWorld *pGameWorld, int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
+	CProjectile(int Type, int Owner, vec2 Pos, vec2 Dir, int Span,
 		int Damage, bool Explosive, float Force, int SoundImpact, int Weapon);
 
 	vec2 GetPos(float Time);
@@ -21,6 +21,7 @@ public:
 	int GetOwner() const { return m_Owner; }
 	void LoseOwner();
 
+	virtual void PostInsert();
 	virtual void Reset();
 	virtual void Tick();
 	virtual void TickPaused();
