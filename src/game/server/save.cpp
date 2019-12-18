@@ -20,7 +20,6 @@ void CSaveTee::save(CCharacter *pChr)
 
 	m_Alive = pChr->IsAlive();
 	m_Paused = abs(pChr->GetPlayer()->IsPaused());
-	m_NeededFaketuning = pChr->NeededFaketuning();
 
 	m_TeeFinished = pChr->Teams()->TeeFinished(pChr->GetPlayer()->GetCID());
 	m_IsSolo = pChr->IsSolo();
@@ -29,7 +28,6 @@ void CSaveTee::save(CCharacter *pChr)
 	{
 		m_aWeapons[i].m_AmmoRegenStart = pChr->GetWeaponAmmoRegenStart(i);
 		m_aWeapons[i].m_Ammo = pChr->GetWeaponAmmo(i);
-		m_aWeapons[i].m_Ammocost = pChr->GetWeaponAmmocost(i);
 		m_aWeapons[i].m_Got = pChr->GetWeaponGot(i);
 	}
 
@@ -69,16 +67,13 @@ void CSaveTee::save(CCharacter *pChr)
 
 	m_NotEligibleForFinish = pChr->GetPlayer()->m_NotEligibleForFinish;
 
-	m_HasTelegunGun = pChr->GetCore().m_HasTelegunGun;
-	m_HasTelegunGrenade = pChr->GetCore().m_HasTelegunGrenade;
-	m_HasTelegunLaser = pChr->GetCore().m_HasTelegunLaser;
+	m_ActiveWeapon = pChr->GetActiveWeapon();
 
 	// Core
 	m_CorePos = pChr->GetCore().m_Pos;
 	m_Vel = pChr->GetCore().m_Vel;
 	m_Hook = pChr->GetCore().m_Hook;
 	m_Collision = pChr->GetCore().m_Collision;
-	m_ActiveWeapon = pChr->GetCore().m_ActiveWeapon;
 	m_Jumped = pChr->GetCore().m_Jumped;
 	m_JumpedTotal = pChr->GetCore().m_JumpedTotal;
 	m_Jumps = pChr->GetCore().m_Jumps;
@@ -98,7 +93,6 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 	pChr->GetPlayer()->Pause(m_Paused, true);
 
 	pChr->SetAlive(m_Alive);
-	pChr->SetNeededFaketuning(m_NeededFaketuning);
 
 	pChr->Teams()->SetForceCharacterTeam(pChr->GetPlayer()->GetCID(), Team);
 	pChr->Teams()->SetFinished(pChr->GetPlayer()->GetCID(), m_TeeFinished);
@@ -107,7 +101,6 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 	{
 		pChr->SetWeaponAmmoRegenStart(i, m_aWeapons[i].m_AmmoRegenStart);
 		pChr->SetWeaponAmmo(i, m_aWeapons[i].m_Ammo);
-		pChr->SetWeaponAmmocost(i, m_aWeapons[i].m_Ammocost);
 		pChr->SetWeaponGot(i, m_aWeapons[i].m_Got);
 	}
 
@@ -147,16 +140,13 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 
 	pChr->GetPlayer()->m_NotEligibleForFinish = pChr->GetPlayer()->m_NotEligibleForFinish || m_NotEligibleForFinish;
 
-	pChr->SetTelegunGun(m_HasTelegunGun);
-	pChr->SetTelegunLaser(m_HasTelegunLaser);
-	pChr->SetTelegunGrenade(m_HasTelegunGrenade);
+	pChr->SetActiveWeapon(m_ActiveWeapon);
 
 	// Core
 	pChr->SetCorePos(m_CorePos);
 	pChr->SetCoreVel(m_Vel);
 	pChr->SetCoreHook(m_Hook);
 	pChr->SetCoreCollision(m_Collision);
-	pChr->SetCoreActiveWeapon(m_ActiveWeapon);
 	pChr->SetCoreJumped(m_Jumped);
 	pChr->SetCoreJumpedTotal(m_JumpedTotal);
 	pChr->SetCoreJumps(m_Jumps);
@@ -182,13 +172,13 @@ void CSaveTee::load(CCharacter *pChr, int Team)
 char* CSaveTee::GetString()
 {
 	str_format(m_String, sizeof(m_String),
-		"%s\t%d\t%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
+		"%s\t%d\t%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
 		%d\t%d\t\
 		%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t\
 		%d\t%d\t%d\t%d\t\
@@ -202,14 +192,14 @@ char* CSaveTee::GetString()
 		%f\t%f\t%f\t%f\t%f\t\
 		%f\t%f\t%f\t%f\t%f\t\
 		%f\t%f\t%f\t%f\t%f\t\
-		%d\t%d\t%d\t%d\t%s",
-		m_name, m_Alive, m_Paused, m_NeededFaketuning, m_TeeFinished, m_IsSolo,
-		m_aWeapons[0].m_AmmoRegenStart, m_aWeapons[0].m_Ammo, m_aWeapons[0].m_Ammocost, m_aWeapons[0].m_Got,
-		m_aWeapons[1].m_AmmoRegenStart, m_aWeapons[1].m_Ammo, m_aWeapons[1].m_Ammocost, m_aWeapons[1].m_Got,
-		m_aWeapons[2].m_AmmoRegenStart, m_aWeapons[2].m_Ammo, m_aWeapons[2].m_Ammocost, m_aWeapons[2].m_Got,
-		m_aWeapons[3].m_AmmoRegenStart, m_aWeapons[3].m_Ammo, m_aWeapons[3].m_Ammocost, m_aWeapons[3].m_Got,
-		m_aWeapons[4].m_AmmoRegenStart, m_aWeapons[4].m_Ammo, m_aWeapons[4].m_Ammocost, m_aWeapons[4].m_Got,
-		m_aWeapons[5].m_AmmoRegenStart, m_aWeapons[5].m_Ammo, m_aWeapons[5].m_Ammocost, m_aWeapons[5].m_Got,
+		%d\t%s",
+		m_name, m_Alive, m_Paused, m_TeeFinished, m_IsSolo,
+		m_aWeapons[0].m_AmmoRegenStart, m_aWeapons[0].m_Ammo, m_aWeapons[0].m_Got,
+		m_aWeapons[1].m_AmmoRegenStart, m_aWeapons[1].m_Ammo, m_aWeapons[1].m_Got,
+		m_aWeapons[2].m_AmmoRegenStart, m_aWeapons[2].m_Ammo, m_aWeapons[2].m_Got,
+		m_aWeapons[3].m_AmmoRegenStart, m_aWeapons[3].m_Ammo, m_aWeapons[3].m_Got,
+		m_aWeapons[4].m_AmmoRegenStart, m_aWeapons[4].m_Ammo, m_aWeapons[4].m_Got,
+		m_aWeapons[5].m_AmmoRegenStart, m_aWeapons[5].m_Ammo, m_aWeapons[5].m_Got,
 		m_LastWeapon, m_QueuedWeapon,
 		m_SuperJump, m_Jetpack, m_NinjaJetpack, m_FreezeTime, m_FreezeTick, m_DeepFreeze, m_EndlessHook, m_DDRaceState, m_Hit, m_Collision, m_TuneZone, m_TuneZoneOld, m_Hook, m_Time,
 		(int)m_Pos.x, (int)m_Pos.y, (int)m_PrevPos.x, (int)m_PrevPos.y,
@@ -223,7 +213,7 @@ char* CSaveTee::GetString()
 		m_CpCurrent[10], m_CpCurrent[11], m_CpCurrent[12], m_CpCurrent[13], m_CpCurrent[14],
 		m_CpCurrent[15], m_CpCurrent[16], m_CpCurrent[17], m_CpCurrent[18], m_CpCurrent[19],
 		m_CpCurrent[20], m_CpCurrent[21], m_CpCurrent[22], m_CpCurrent[23], m_CpCurrent[24],
-		m_NotEligibleForFinish, m_HasTelegunGun, m_HasTelegunLaser, m_HasTelegunGrenade, aGameUuid
+		m_NotEligibleForFinish, aGameUuid
 	);
 	return m_String;
 }
@@ -232,13 +222,13 @@ int CSaveTee::LoadString(char* String)
 {
 	int Num;
 	Num = sscanf(String,
-		"%[^\t]\t%d\t%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
-		%d\t%d\t%d\t%d\t\
+		"%[^\t]\t%d\t%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
+		%d\t%d\t%d\t\
 		%d\t%d\t\
 		%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t\
 		%f\t%f\t%f\t%f\t\
@@ -252,14 +242,14 @@ int CSaveTee::LoadString(char* String)
 		%f\t%f\t%f\t%f\t%f\t\
 		%f\t%f\t%f\t%f\t%f\t\
 		%f\t%f\t%f\t%f\t%f\t\
-		%d\t%d\t%d\t%d\t%*s",
-		m_name, &m_Alive, &m_Paused, &m_NeededFaketuning, &m_TeeFinished, &m_IsSolo,
-		&m_aWeapons[0].m_AmmoRegenStart, &m_aWeapons[0].m_Ammo, &m_aWeapons[0].m_Ammocost, &m_aWeapons[0].m_Got,
-		&m_aWeapons[1].m_AmmoRegenStart, &m_aWeapons[1].m_Ammo, &m_aWeapons[1].m_Ammocost, &m_aWeapons[1].m_Got,
-		&m_aWeapons[2].m_AmmoRegenStart, &m_aWeapons[2].m_Ammo, &m_aWeapons[2].m_Ammocost, &m_aWeapons[2].m_Got,
-		&m_aWeapons[3].m_AmmoRegenStart, &m_aWeapons[3].m_Ammo, &m_aWeapons[3].m_Ammocost, &m_aWeapons[3].m_Got,
-		&m_aWeapons[4].m_AmmoRegenStart, &m_aWeapons[4].m_Ammo, &m_aWeapons[4].m_Ammocost, &m_aWeapons[4].m_Got,
-		&m_aWeapons[5].m_AmmoRegenStart, &m_aWeapons[5].m_Ammo, &m_aWeapons[5].m_Ammocost, &m_aWeapons[5].m_Got,
+		%d\t%*s",
+		m_name, &m_Alive, &m_Paused, &m_TeeFinished, &m_IsSolo,
+		&m_aWeapons[0].m_AmmoRegenStart, &m_aWeapons[0].m_Ammo, &m_aWeapons[0].m_Got,
+		&m_aWeapons[1].m_AmmoRegenStart, &m_aWeapons[1].m_Ammo, &m_aWeapons[1].m_Got,
+		&m_aWeapons[2].m_AmmoRegenStart, &m_aWeapons[2].m_Ammo, &m_aWeapons[2].m_Got,
+		&m_aWeapons[3].m_AmmoRegenStart, &m_aWeapons[3].m_Ammo, &m_aWeapons[3].m_Got,
+		&m_aWeapons[4].m_AmmoRegenStart, &m_aWeapons[4].m_Ammo, &m_aWeapons[4].m_Got,
+		&m_aWeapons[5].m_AmmoRegenStart, &m_aWeapons[5].m_Ammo, &m_aWeapons[5].m_Got,
 		&m_LastWeapon, &m_QueuedWeapon,
 		&m_SuperJump, &m_Jetpack, &m_NinjaJetpack, &m_FreezeTime, &m_FreezeTick, &m_DeepFreeze, &m_EndlessHook, &m_DDRaceState, &m_Hit, &m_Collision, &m_TuneZone, &m_TuneZoneOld, &m_Hook, &m_Time,
 		&m_Pos.x, &m_Pos.y, &m_PrevPos.x, &m_PrevPos.y,
@@ -273,19 +263,11 @@ int CSaveTee::LoadString(char* String)
 		&m_CpCurrent[10], &m_CpCurrent[11], &m_CpCurrent[12], &m_CpCurrent[13], &m_CpCurrent[14],
 		&m_CpCurrent[15], &m_CpCurrent[16], &m_CpCurrent[17], &m_CpCurrent[18], &m_CpCurrent[19],
 		&m_CpCurrent[20], &m_CpCurrent[21], &m_CpCurrent[22], &m_CpCurrent[23], &m_CpCurrent[24],
-		&m_NotEligibleForFinish, &m_HasTelegunGun, &m_HasTelegunLaser, &m_HasTelegunGrenade
+		&m_NotEligibleForFinish
 	);
 	switch(Num) // Don't forget to update this when you save / load more / less.
 	{
-	case 96:
-		m_NotEligibleForFinish = false;
-		// fallthrough
-	case 97:
-		m_HasTelegunGrenade = 0;
-		m_HasTelegunLaser = 0;
-		m_HasTelegunGun = 0;
-		// fallthrough
-	case 100:
+	case 90:
 		return 0;
 	default:
 		dbg_msg("load", "failed to load tee-string");

@@ -169,7 +169,7 @@ void CProjectile::Tick()
 		}
 
 		if (pOwnerChar && ColPos && !GameLayerClipped(ColPos) &&
-			((m_Type == WEAPON_GRENADE && pOwnerChar->HasTelegunGrenade()) || (m_Type == WEAPON_GUN && pOwnerChar->HasTelegunGun())))
+			((m_Type == WEAPON_GRENADE && pOwnerChar->m_HasTeleGrenade) || (m_Type == WEAPON_GUN && pOwnerChar->m_HasTeleGun)))
 		{
 			int MapIndex = GameServer()->Collision()->GetPureMapIndex(pTargetChr ? pTargetChr->GetPos() : ColPos);
 			int TileFIndex = GameServer()->Collision()->GetFTileIndex(MapIndex);

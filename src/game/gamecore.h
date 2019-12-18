@@ -192,7 +192,6 @@ public:
 
 	// DDrace
 
-	int m_ActiveWeapon; // TODO: DDNet7 implement this https://github.com/ddnet/ddnet/commit/68980e76997a199543e9304d462439b4e73e478b
 	int m_Id;
 	bool m_pReset;
 	class CCollision* Collision() { return m_pCollision; }
@@ -200,26 +199,6 @@ public:
 	vec2 m_LastVel;
 	int m_Colliding;
 	bool m_LeftWall;
-
-	// DDnet Character
-	// TODO: DDNet Character is not implemented in yet DDNET7
-	// void ReadDDNet(const CNetObj_DDNetCharacter *pObjDDNet);
-	bool m_Solo;
-	bool m_Jetpack;
-	bool m_NoCollision;
-	bool m_EndlessHook;
-	bool m_EndlessJump;
-	bool m_NoHammerHit;
-	bool m_NoGrenadeHit;
-	bool m_NoLaserHit;
-	bool m_NoShotgunHit;
-	bool m_NoHookHit;
-	bool m_Super;
-	bool m_HasTelegunGun;
-	bool m_HasTelegunGrenade;
-	bool m_HasTelegunLaser;
-	int m_FreezeEnd;
-	bool m_DeepFrozen;
 
 private:
 
