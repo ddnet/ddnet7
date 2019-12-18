@@ -30,14 +30,11 @@ LOCK CSqlScore::ms_FailureFileLock = lock_create();
 
 CSqlTeamSave::~CSqlTeamSave()
 {
-	// TODO: save
-	/*
 	try
 	{
 		((class CGameControllerDDRace*)(GameServer()->m_pController))->m_Teams.SetSaving(m_Team, false);
 	}
 	catch (CGameContextError& e) {}
-	*/
 }
 
 
