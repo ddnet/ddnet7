@@ -5,11 +5,13 @@
 #include <game/server/player.h>
 #include <game/server/gamecontext.h>
 #include "DDRace.h"
+#include "gamemode.h"
+
 
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 		IGameController(pGameServer), m_Teams(pGameServer)
 {
-	m_pGameType = "DDraceNetwork";
+	m_pGameType = g_Config.m_SvTestingCommands ? TEST_NAME : GAME_NAME;
 
 	InitTeleporter();
 }
