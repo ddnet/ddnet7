@@ -383,6 +383,26 @@ void IGameController::Snap(int SnappingClient)
 		pGameData->m_GameStartTick = pSnappingChar->m_StartTime;
 	else
 		pGameData->m_GameStartTick = m_GameStartTick;
+
+	CCharacter *pChr;
+	CPlayer *pPlayer = SnappingClient > -1 ? GameServer()->m_apPlayers[SnappingClient] : 0;
+	CPlayer *pPlayer2;
+	if(pPlayer)
+	{
+		if((pPlayer->GetTeam() == TEAM_SPECTATORS || pPlayer->IsPaused())
+			&& (pPlayer->GetSpecMode() != SPEC_FREEVIEW)
+			&& (pPlayer2 = GameServer()->m_apPlayers[pPlayer->GetSpectatorID()]))
+		{
+			if((pChr = pPlayer2->GetCharacter()) && pChr->m_DDraceState == DDRACE_STARTED)
+			{
+				pGameData->m_GameStartTick = pChr->m_StartTime;
+			}
+		}
+		else if((pChr = pPlayer->GetCharacter()) && pChr->m_DDraceState == DDRACE_STARTED)
+		{
+			pGameData->m_GameStartTick = pChr->m_StartTime;
+		}
+	}
 	pGameData->m_GameStateFlags = 0;
 	pGameData->m_GameStateEndTick = 0; // no timer/infinite = 0, on end = GameEndTick, otherwise = GameStateEndTick
 	if(m_SuddenDeath)
