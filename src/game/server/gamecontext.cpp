@@ -719,7 +719,7 @@ void CGameContext::OnTick()
 	if(m_pRandomMapResult && m_pRandomMapResult->m_Done)
 	{
 		str_copy(g_Config.m_SvMap, m_pRandomMapResult->m_aMap, sizeof(g_Config.m_SvMap));
-		m_pRandomMapResult = NULL;
+		m_pRandomMapResult = nullptr;
 	}
 
 	if(m_pMapVoteResult && m_pMapVoteResult->m_Done)
@@ -1131,6 +1131,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							return;
 						}
 						m_VoteType = VOTE_START_OP;
+						m_LastMapVote = time_get();
 						break;
 					}
 
