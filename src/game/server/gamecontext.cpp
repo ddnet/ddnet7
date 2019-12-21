@@ -736,7 +736,7 @@ void CGameContext::OnTick()
 
 		CallVote(m_pMapVoteResult->m_ClientID, m_pMapVoteResult->m_aMap, aCmd, "/map", aChatmsg);
 
-		m_pMapVoteResult = NULL;
+		m_pMapVoteResult = nullptr;
 	}
 
 #ifdef CONF_DEBUG

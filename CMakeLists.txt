@@ -120,6 +120,17 @@ function(add_c_compiler_flag_if_supported VARIABLE FLAG)
 endfunction()
 
 if(NOT MSVC)
+  if(CMAKE_VERSION VERSION_LESS 3.1 OR TARGET_OS STREQUAL "mac")
+    check_cxx_compiler_flag(-std=gnu++11 FLAG_SUPPORTED_std_gnu__11)
+    if(FLAG_SUPPORTED_std_gnu__11)
+      if(CMAKE_CXX_FLAGS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+      else()
+        set(CMAKE_CXX_FLAGS -std=gnu++11)
+      endif()
+    endif()
+  endif()
+
   # Protect the stack pointer.
   # -fstack-protector-all doesn't work on MinGW.
   add_c_compiler_flag_if_supported(OUR_FLAGS -fstack-protector-strong)
@@ -1861,7 +1872,7 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${TARGET_CLIENT}.icns ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/
     COMMAND ${CMAKE_COMMAND} -E copy bundle/client/Info.plist ${PROJECT_SOURCE_DIR}/other/bundle/client/PkgInfo ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_CLIENT}> ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/other/sdl/mac/lib64/SDL2.framework ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/SDL2.framework
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/ddnet-libs/sdl/mac/lib64/SDL2.framework ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/SDL2.framework
     COMMAND ${CMAKE_COMMAND} -E copy ${FREETYPE_LIBRARY} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/libfreetype.6.dylib
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} SDL2 @executable_path/../Frameworks/SDL2.framework/SDL2
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} libfreetype @executable_path/../Frameworks/libfreetype.6.dylib
