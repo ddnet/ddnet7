@@ -2514,7 +2514,7 @@ int main(int argc, const char **argv) // ignore_convention
 	return Ret;
 }
 
-// DDrace
+// DDRace
 
 void CServer::GetClientAddr(int ClientID, NETADDR* pAddr)
 {
@@ -2560,6 +2560,18 @@ const char* CServer::GetAnnouncementLine(char const* pFileName)
 	io_close(File);
 
 	return v[m_AnnouncementLastLine];
+}
+
+bool CServer::SetTimedOut(int ClientID, int OrigID)
+{
+	if (!m_NetServer.SetTimedOut(ClientID, OrigID))
+	{
+		return false;
+	}
+	DelClientCallback(OrigID, "Timeout Protection used", this);
+	m_aClients[ClientID].m_Authed = AUTHED_NO;
+	// m_aClients[ClientID].m_Flags = m_aClients[OrigID].m_Flags;
+	return true;
 }
 
 #if defined (CONF_SQL)

@@ -78,7 +78,9 @@ int CNetServer::Update()
 			continue;
 
 		m_aSlots[i].m_Connection.Update();
-		if(m_aSlots[i].m_Connection.State() == NET_CONNSTATE_ERROR)
+		if(m_aSlots[i].m_Connection.State() == NET_CONNSTATE_ERROR &&
+			(!m_aSlots[i].m_Connection.m_TimeoutProtected ||
+			 !m_aSlots[i].m_Connection.m_TimeoutSituation))
 		{
 			Drop(i, m_aSlots[i].m_Connection.ErrorString());
 		}
@@ -355,4 +357,30 @@ bool CNetServer::Connlimit(NETADDR Addr)
 	m_aSpamConns[Oldest].m_Time = Now;
 	m_aSpamConns[Oldest].m_Conns = 1;
 	return false;
+}
+
+bool CNetServer::SetTimedOut(int ClientID, int OrigID)
+{
+	if (m_aSlots[ClientID].m_Connection.State() != NET_CONNSTATE_ERROR)
+		return false;
+
+	m_aSlots[ClientID].m_Connection.SetTimedOut(ClientAddr(OrigID), m_aSlots[OrigID].m_Connection.SeqSequence(), m_aSlots[OrigID].m_Connection.AckSequence(), m_aSlots[OrigID].m_Connection.Token(), m_aSlots[OrigID].m_Connection.ResendBuffer());
+	m_aSlots[OrigID].m_Connection.Reset();
+	return true;
+}
+
+void CNetServer::SetTimeoutProtected(int ClientID)
+{
+	m_aSlots[ClientID].m_Connection.m_TimeoutProtected = true;
+}
+
+int CNetServer::ResetErrorString(int ClientID)
+{
+	m_aSlots[ClientID].m_Connection.ResetErrorString();
+	return 0;
+}
+
+const char *CNetServer::ErrorString(int ClientID)
+{
+	return m_aSlots[ClientID].m_Connection.ErrorString();
 }

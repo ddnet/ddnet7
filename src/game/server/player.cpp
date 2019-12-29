@@ -46,7 +46,7 @@ void CPlayer::Reset()
 	m_IsReadyToPlay = false;
 	m_WeakHookSpawn = false;
 
-	// DDrace
+	// DDRace
 
 	m_LastCommandPos = 0;
 	m_LastPlaytime = time_get();
@@ -57,6 +57,7 @@ void CPlayer::Reset()
 	m_DefEmote = EMOTE_NORMAL;
 	m_Afk = false;
 	m_LastSetSpectatorMode = 0;
+	m_TimeoutCode[0] = '\0';
 
 	m_TuneZone = 0;
 	m_TuneZoneOld = m_TuneZone;
@@ -158,6 +159,14 @@ void CPlayer::Tick()
 			m_Latency.m_AccumMin = 1000;
 			m_Latency.m_AccumMax = 0;
 		}
+	}
+
+	if(Server()->GetNetErrorString(m_ClientID)[0])
+	{
+		char aBuf[512];
+		str_format(aBuf, sizeof(aBuf), "'%s' would have timed out, but can use timeout protection now", Server()->ClientName(m_ClientID));
+		GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
+		Server()->ResetNetErrorString(m_ClientID);
 	}
 
 	if (!GameServer()->m_World.m_Paused)

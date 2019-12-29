@@ -111,7 +111,7 @@ void CGameContext::ConSettings(IConsole::IResult *pResult, void *pUserData)
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "settings",
 				"teams, collision, hooking, endlesshooking, me, ");
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "settings",
-				"hitting, oldlaser, votes, pause and scores");
+				"hitting, oldlaser, timeout, votes, pause and scores");
 	}
 	else
 	{
@@ -173,6 +173,11 @@ void CGameContext::ConSettings(IConsole::IResult *pResult, void *pUserData)
 				g_Config.m_SvSlashMe ?
 						"Players can use /me commands the famous IRC Command" :
 						"Players can't use the /me command");
+		}
+		else if (str_comp(pArg, "timeout") == 0)
+		{
+			str_format(aBuf, sizeof(aBuf), "The Server Timeout is currently set to %d seconds", g_Config.m_ConnTimeout);
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "settings", aBuf);
 		}
 		else if (str_comp(pArg, "votes") == 0)
 		{
@@ -516,7 +521,34 @@ void CGameContext::ConPractice(IConsole::IResult *pResult, void *pUserData)
 			if(Teams.m_Core.Team(i) == Team)
 				pSelf->SendChatTarget(i, "Practice mode enabled for your team, happy practicing!");
 	}
+}
 
+void CGameContext::ConTimeout(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *) pUserData;
+	if (!CheckClientID(pResult->m_ClientID))
+		return;
+
+	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
+	if (!pPlayer)
+		return;
+
+	const char* pTimeout = pResult->NumArguments() > 0 ? pResult->GetString(0) : pPlayer->m_TimeoutCode;
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if (i == pResult->m_ClientID) continue;
+		if (!pSelf->m_apPlayers[i]) continue;
+		if (str_comp(pSelf->m_apPlayers[i]->m_TimeoutCode, pTimeout)) continue;
+		if (pSelf->Server()->SetTimedOut(i, pResult->m_ClientID)) {
+			if (pSelf->m_apPlayers[i]->GetCharacter())
+				pSelf->SendTuningParams(i, pSelf->m_apPlayers[i]->GetCharacter()->m_TuneZone);
+			return;
+		}
+	}
+
+	pSelf->Server()->SetTimeoutProtected(pResult->m_ClientID);
+	str_copy(pPlayer->m_TimeoutCode, pResult->GetString(0), sizeof(pPlayer->m_TimeoutCode));
 }
 
 void CGameContext::ConSave(IConsole::IResult *pResult, void *pUserData)
