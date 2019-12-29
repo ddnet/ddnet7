@@ -12,7 +12,7 @@ script:
 - cmake -Werror=dev -DDOWNLOAD_GTEST=ON -DDEV=ON ..
 - make run_tests
 - cd ../build
-- ./DDNet-Server shutdown
+- ./DDNet7-Server shutdown
 env:
   global:
   - CFLAGS="-Wdeclaration-after-statement -Werror"

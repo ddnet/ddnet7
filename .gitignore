@@ -21,8 +21,8 @@ other/freetype
 other/sdl
 Info.plist
 
-DDNet
-DDNet-Server
+DDNet7
+DDNet7-Server
 crapnet*
 fake_server*
 map_resave*
