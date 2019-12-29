@@ -27,13 +27,21 @@ endif()
 
 if(POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
-  project(DDNet VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+  if(VERSION_PATCH STREQUAL "0")
+    project(DDNet7-Server VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+  else()
+    project(DDNet7-Server VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+  endif()
 else()
-  project(DDNet)
+  project(DDNet7-Server)
   set(PROJECT_VERSION_MAJOR ${VERSION_MAJOR})
   set(PROJECT_VERSION_MINOR ${VERSION_MINOR})
   set(PROJECT_VERSION_PATCH ${VERSION_PATCH})
-  set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+  if(VERSION_PATCH STREQUAL "0")
+    set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+  else()
+    set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+  endif()
 endif()
 
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
@@ -95,8 +103,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
   src/game/version.h
 )
 
-set(SERVER_EXECUTABLE DDNet-Server CACHE STRING "Name of the built server executable")
-set(CLIENT_EXECUTABLE DDNet CACHE STRING "Name of the build client executable")
+set(SERVER_EXECUTABLE DDNet7-Server CACHE STRING "Name of the built server executable")
+set(CLIENT_EXECUTABLE DDNet7 CACHE STRING "Name of the build client executable")
 
 ########################################################################
 # Compiler flags
@@ -131,12 +139,21 @@ if(NOT MSVC)
     endif()
   endif()
 
-  # Protect the stack pointer.
-  # -fstack-protector-all doesn't work on MinGW.
-  add_c_compiler_flag_if_supported(OUR_FLAGS -fstack-protector-strong)
+  # Doesn't link in MinGW currently:
+  # undefined reference to `__stack_chk_guard'
+  # undefined reference to `__stack_chk_fail'
+  if(NOT MINGW)
+    # Protect the stack pointer.
+    # -fstack-protector-all doesn't work on MinGW.
+    add_c_compiler_flag_if_supported(OUR_FLAGS -fstack-protector-strong)
+  endif()
 
-  # Protect the stack from clashing.
-  add_c_compiler_flag_if_supported(OUR_FLAGS -fstack-clash-protection)
+  # Currently broken in combination with SEH:
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90458
+  if(NOT MINGW)
+    # Protect the stack from clashing.
+    add_c_compiler_flag_if_supported(OUR_FLAGS -fstack-clash-protection)
+  endif()
 
   # Control-flow protection. Should protect against ROP.
   add_c_compiler_flag_if_supported(OUR_FLAGS -fcf-protection)
@@ -323,7 +340,7 @@ if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   find_program(HDIUTIL hdiutil)
 endif()
 
-message(STATUS "******** DDNet ********")
+message(STATUS "******** DDNet7 ********")
 message(STATUS "Target OS: ${TARGET_OS} ${TARGET_BITS}bit")
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -359,18 +376,18 @@ show_dependency_status("Wavpack" WAVPACK)
 show_dependency_status("Zlib" ZLIB)
 
 if(NOT(PYTHONINTERP_FOUND))
-  message(SEND_ERROR "You must install Python to compile DDNet")
+  message(SEND_ERROR "You must install Python to compile DDNet7")
 endif()
 
 if(MYSQL AND NOT(MYSQL_FOUND))
-  message(SEND_ERROR "You must install MySQL to compile the DDNet server with MySQL support")
+  message(SEND_ERROR "You must install MySQL to compile the DDNet7 server with MySQL support")
 endif()
 
 if(CLIENT AND NOT(FREETYPE_FOUND))
-  message(SEND_ERROR "You must install Freetype to compile the DDNet client")
+  message(SEND_ERROR "You must install Freetype to compile the DDNet7 client")
 endif()
 if(CLIENT AND NOT(SDL2_FOUND))
-  message(SEND_ERROR "You must install SDL2 to compile the DDNet client")
+  message(SEND_ERROR "You must install SDL2 to compile the DDNet7 client")
 endif()
 if(NOT(GTEST_FOUND))
   if(DOWNLOAD_GTEST)
@@ -1073,10 +1090,7 @@ foreach(datafile ${DATA})
   file(MAKE_DIRECTORY ${DESTINATION})
   file(COPY ${datafile} DESTINATION ${DESTINATION})
 endforeach()
-set(COPY_FILES
-  ${FREETYPE_COPY_FILES}
-  ${SDL2_COPY_FILES}
-)
+set(COPY_FILES)
 file(COPY ${COPY_FILES} DESTINATION .)
 
 ########################################################################
@@ -1424,9 +1438,9 @@ if(CLIENT)
   if(TARGET_OS STREQUAL "windows")
     set(CLIENT_ICON "other/icons/${CLIENT_EXECUTABLE}.rc")
     if(NOT MINGW)
-      set(CLIENT_MANIFEST "other/manifest/DDNet.manifest")
+      set(CLIENT_MANIFEST "other/manifest/DDNet7.manifest")
     else()
-      set(CLIENT_MANIFEST "other/manifest/DDNet.rc")
+      set(CLIENT_MANIFEST "other/manifest/DDNet7.rc")
     endif()
   else()
     set(CLIENT_ICON)
@@ -1750,6 +1764,11 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+if(VERSION_PATCH STREQUAL "0")
+  set(CPACK_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR})
+else()
+  set(CPACK_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+endif()
 set(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 
 if(TARGET_OS AND TARGET_BITS)
@@ -1802,10 +1821,9 @@ endforeach()
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME ${PROJECT_NAME})
 
 set(CPACK_TARGETS
-  ${TARGET_CLIENT}
   ${TARGET_SERVER}
 )
-set(CPACK_DIRS ${PROJECT_BINARY_DIR}/data)
+set(CPACK_DIRS ${PROJECT_BINARY_DIR}/data/maps)
 set(CPACK_FILES
   license.txt
   storage.cfg
@@ -1834,7 +1852,7 @@ endif()
 
 set(PACKAGE_TARGETS)
 
-if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
+if(DMGTOOLS_FOUND OR HDIUTIL)
   file(MAKE_DIRECTORY bundle/client/)
   file(MAKE_DIRECTORY bundle/server/)
   configure_file(other/bundle/client/Info.plist.in bundle/client/Info.plist)
@@ -1847,11 +1865,6 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
   endif()
   set(DMG_TMPDIR pack_${CPACK_PACKAGE_FILE_NAME}_dmg)
   set(DMG_MKDIRS
-    ${TARGET_CLIENT}.app
-    ${TARGET_CLIENT}.app/Contents
-    ${TARGET_CLIENT}.app/Contents/Frameworks
-    ${TARGET_CLIENT}.app/Contents/MacOS
-    ${TARGET_CLIENT}.app/Contents/Resources
     ${TARGET_SERVER}.app
     ${TARGET_SERVER}.app/Contents
     ${TARGET_SERVER}.app/Contents/MacOS
@@ -1867,16 +1880,6 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
   add_custom_command(OUTPUT ${CPACK_PACKAGE_FILE_NAME}.dmg
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${DMG_TMPDIR}
     ${DMG_MKDIR_COMMANDS}
-
-    # CLIENT
-    COMMAND ${CMAKE_COMMAND} -E copy_directory data ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/data
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${TARGET_CLIENT}.icns ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/
-    COMMAND ${CMAKE_COMMAND} -E copy bundle/client/Info.plist ${PROJECT_SOURCE_DIR}/other/bundle/client/PkgInfo ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_CLIENT}> ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/ddnet-libs/sdl/mac/lib64/SDL2.framework ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/SDL2.framework
-    COMMAND ${CMAKE_COMMAND} -E copy ${FREETYPE_LIBRARY} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/libfreetype.6.dylib
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} SDL2 @executable_path/../Frameworks/SDL2.framework/SDL2
-    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} libfreetype @executable_path/../Frameworks/libfreetype.6.dylib
 
     # SERVER
     COMMAND ${CMAKE_COMMAND} -E copy_directory data/maps ${DMG_TMPDIR}/${TARGET_SERVER}.app/Contents/Resources/data/maps
@@ -1895,7 +1898,6 @@ if(CLIENT AND (DMGTOOLS_FOUND OR HDIUTIL))
       ${PROJECT_BINARY_DIR}/bundle/server/Info.plist
       other/bundle/client/PkgInfo
       other/bundle/server/PkgInfo
-      other/icons/${TARGET_CLIENT}.icns
       other/icons/${TARGET_SERVER}.icns
       scripts/dmg.py
   )
@@ -1919,10 +1921,11 @@ foreach(ext zip tar.gz tar.xz)
   endforeach()
   foreach(dir ${CPACK_DIRS})
     get_filename_component(NAME ${dir} NAME)
-    list(APPEND COPY_DIR_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy_directory ${dir} ${TMPDIR}/${NAME})
+    list(APPEND COPY_DIR_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy_directory ${dir} ${TMPDIR}/data/${NAME})
   endforeach()
   foreach(target ${CPACK_TARGETS})
     list(APPEND COPY_TARGET_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${target}> ${TMPDIR}/)
+    list(APPEND STRIP_TARGET_COMMANDS COMMAND strip -s ${TMPDIR}/$<TARGET_FILE_NAME:${target}>)
   endforeach()
 
   if(ext STREQUAL zip)
@@ -1935,6 +1938,9 @@ foreach(ext zip tar.gz tar.xz)
   add_custom_command(OUTPUT ${CPACK_PACKAGE_FILE_NAME}.${ext}
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${TMPDIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TMPDIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TMPDIR}/data
+    # Needed so the server recognizes the data directory.
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TMPDIR}/data/mapres
     ${COPY_FILE_COMMANDS}
     ${COPY_DIR_COMMANDS}
     ${COPY_TARGET_COMMANDS}
@@ -2001,7 +2007,11 @@ foreach(target ${TARGETS})
     target_compile_options(${target} PRIVATE ${OUR_FLAGS})
   endif()
   if(DEFINE_FORTIFY_SOURCE)
-    target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=2>) # Detect some buffer overflows.
+    if(MINGW)
+      target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=0>) # Currently broken in MinGW, see https://sourceforge.net/p/mingw-w64/discussion/723798/thread/b9d24f041f/
+    else()
+      target_compile_definitions(${target} PRIVATE $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=2>) # Detect some buffer overflows.
+    endif()
   endif()
   target_compile_definitions(${target} PRIVATE _GLIBCXX_ASSERTIONS) # Enable run-time bounds-checking for the STL
 endforeach()

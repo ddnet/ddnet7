@@ -12,20 +12,20 @@ jobs:
             apt-get install cmake libfreetype6-dev libsdl2-dev -y
             git submodule update --init
       - run:
-          name: Build DDNet with cmake in Release mode
+          name: Build DDNet7 with cmake in Release mode
           command: |
             mkdir -p release
             cd release
             env CFLAGS="-Wdeclaration-after-statement -Werror" CXXFLAGS="-Werror" cmake -Werror=dev -DDOWNLOAD_GTEST=ON ..
             make everything
             make run_tests
-            ./DDNet-Server shutdown
+            ./DDNet7-Server shutdown
       - run:
-          name: Build DDNet with cmake in Debug mode
+          name: Build DDNet7 with cmake in Debug mode
           command: |
             mkdir -p debug
             cd debug
             env CFLAGS="-Wdeclaration-after-statement -Werror" CXXFLAGS="-Werror" cmake -Werror=dev -DDOWNLOAD_GTEST=ON -DDEV=ON ..
             make everything
             make run_tests
-            ./DDNet-Server shutdown
+            ./DDNet7-Server shutdown
