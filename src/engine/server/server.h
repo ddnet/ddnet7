@@ -143,6 +143,9 @@ public:
 		int m_Authed;
 		int m_AuthTries;
 
+		float m_Traffic;
+		int64 m_TrafficSince;
+
 		int m_MapChunk;
 		bool m_NoRconNote;
 		bool m_Quitting;
