@@ -819,6 +819,9 @@ void CGameContext::OnClientEnter(int ClientID)
 		m_apPlayers[ClientID]->m_Score = !Score()->PlayerData(ClientID)->m_BestTime ? -9999 : Score()->PlayerData(ClientID)->m_BestTime;
 	}
 
+	if (g_Config.m_SvWelcome[0] != 0)
+		SendChatTarget(ClientID, g_Config.m_SvWelcome);
+
 	m_VoteUpdate = true;
 
 	// update client infos (others before local)
@@ -2534,7 +2537,7 @@ void CGameContext::SendChatResponseAll(const char* pLine, void* pUser)
 			pLine++;
 	while ((pLine - 2 < pLineOrig || *(pLine - 2) != ':') && *pLine != 0);//remove the category (e.g. [Console]: No Such Command)
 
-	pSelf->SendChat(-1, CHAT_ALL, -1, aBuf);
+	pSelf->SendChat(-1, CHAT_ALL, -1, pLine);
 
 	ReentryGuard--;
 }
