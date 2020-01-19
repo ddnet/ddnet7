@@ -279,6 +279,7 @@ public:
 
 	void SetCorePos(vec2 Pos) { m_Core.m_Pos = Pos; };
 	void SetCoreVel(vec2 Vel) { m_Core.m_Vel = Vel; };
+	void ResetNumInputs() { m_NumInputs = 0; };
 };
 
 enum
