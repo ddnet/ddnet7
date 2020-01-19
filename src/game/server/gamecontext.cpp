@@ -1982,6 +1982,21 @@ void CGameContext::OnConsoleInit()
 
 	Console()->Register("random_map", "?i[stars]", CFGFLAG_SERVER, ConRandomMap, this, "Random map");
 	Console()->Register("random_unfinished_map", "?i[stars]", CFGFLAG_SERVER, ConRandomUnfinishedMap, this, "Random unfinished map");
+
+	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
+
+	Console()->Chain("sv_vote_kick", ConchainSettingUpdate, this);
+	Console()->Chain("sv_vote_kick_min", ConchainSettingUpdate, this);
+	Console()->Chain("sv_vote_spectate", ConchainSettingUpdate, this);
+	Console()->Chain("sv_player_slots", ConchainSettingUpdate, this);
+
+	Console()->Chain("sv_scorelimit", ConchainGameinfoUpdate, this);
+	Console()->Chain("sv_timelimit", ConchainGameinfoUpdate, this);
+
+	#define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
+	#include <game/ddracecommands.h>
+	#define CHAT_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
+	#include "ddracechat.h"
 }
 
 void CGameContext::OnInit()
@@ -2245,21 +2260,6 @@ void CGameContext::OnInit()
 			}
 		}
 	}
-
-	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
-
-	Console()->Chain("sv_vote_kick", ConchainSettingUpdate, this);
-	Console()->Chain("sv_vote_kick_min", ConchainSettingUpdate, this);
-	Console()->Chain("sv_vote_spectate", ConchainSettingUpdate, this);
-	Console()->Chain("sv_player_slots", ConchainSettingUpdate, this);
-
-	Console()->Chain("sv_scorelimit", ConchainGameinfoUpdate, this);
-	Console()->Chain("sv_timelimit", ConchainGameinfoUpdate, this);
-
-	#define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
-	#include <game/ddracecommands.h>
-	#define CHAT_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
-	#include "ddracechat.h"
 
 	// clamp sv_player_slots to 0..MaxClients
 	if(Server()->MaxClients() < g_Config.m_SvPlayerSlots)
