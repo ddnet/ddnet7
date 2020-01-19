@@ -398,6 +398,14 @@ void IGameController::Snap(int SnappingClient)
 	if(m_SuddenDeath)
 		pGameData->m_GameStateFlags |= GAMESTATEFLAG_SUDDENDEATH;
 
+	CNetObj_GameDataRace* pGameDataRace = static_cast<CNetObj_GameDataRace*>(Server()->SnapNewItem(NETOBJTYPE_GAMEDATARACE, 0, sizeof(CNetObj_GameDataRace)));
+	if (!pGameDataRace)
+		return;
+
+	pGameDataRace->m_BestTime = m_CurrentRecord == 0 ? -1 : m_CurrentRecord * 1000.0f;
+	pGameDataRace->m_Precision = 0;
+	pGameDataRace->m_RaceFlags = 0;
+
 	// demo recording
 	if(SnappingClient == -1)
 	{

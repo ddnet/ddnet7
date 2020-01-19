@@ -558,6 +558,8 @@ void CGameTeams::OnFinish(CPlayer* Player, float Time, const char *pTimestamp)
 		Player->m_Score = TTime;
 		Player->m_HasFinishScore = true;
 	}
+
+	Player->m_Score = GameServer()->Score()->PlayerData(Player->GetCID())->m_BestTime;
 }
 
 void CGameTeams::OnCharacterSpawn(int ClientID)

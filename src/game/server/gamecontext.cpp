@@ -816,7 +816,7 @@ void CGameContext::OnClientEnter(int ClientID)
 		Score()->PlayerData(ClientID)->Reset();
 		Score()->LoadScore(ClientID);
 		Score()->PlayerData(ClientID)->m_CurrentTime = Score()->PlayerData(ClientID)->m_BestTime;
-		m_apPlayers[ClientID]->m_Score = !Score()->PlayerData(ClientID)->m_BestTime ? -9999 : Score()->PlayerData(ClientID)->m_BestTime;
+		m_apPlayers[ClientID]->m_Score = !Score()->PlayerData(ClientID)->m_BestTime ? -1 : Score()->PlayerData(ClientID)->m_BestTime;
 	}
 
 	if (g_Config.m_SvWelcome[0] != 0)

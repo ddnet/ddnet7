@@ -95,7 +95,7 @@ void CPlayer::Reset()
 	m_Paused = PAUSE_NONE;
 
 	m_LastPause = 0;
-	m_Score = -9999;
+	m_Score = -1;
 	m_HasFinishScore = false;
 
 	// Variable initialized:
@@ -263,9 +263,9 @@ void CPlayer::Snap(int SnappingClient)
 	
 	// send 0 if times of others are not shown
 	if (SnappingClient != m_ClientID && g_Config.m_SvHideScore)
-		pPlayerInfo->m_Score = -9999;
+		pPlayerInfo->m_Score = -1;
 	else
-		pPlayerInfo->m_Score = abs(m_Score) * -1;
+		pPlayerInfo->m_Score = m_Score == -1 ? -1 : abs(m_Score) * 1000.0f;
 
 	if(m_ClientID == SnappingClient && (m_Team == TEAM_SPECTATORS || m_Paused))
 	{
