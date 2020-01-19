@@ -1282,7 +1282,7 @@ set(GAME_GENERATED_SHARED
   src/generated/protocol.h
 )
 
-set(DEPS ${DEP_MD5} ${ZLIB_DEP})
+set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
 
 # Libraries
 set(LIBS
