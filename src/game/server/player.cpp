@@ -719,7 +719,7 @@ int CPlayer::Pause(int State, bool Force)
 			if (g_Config.m_SvPauseMessages)
 			{
 				str_format(aBuf, sizeof(aBuf), (State > PAUSE_NONE) ? "'%s' speced" : "'%s' resumed", Server()->ClientName(m_ClientID));
-				GameServer()->SendChatTarget(-1, aBuf);
+				GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 			}
 			break;
 		}
@@ -747,7 +747,7 @@ int CPlayer::ForcePause(int Time)
 	{
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "'%s' was force-paused for %ds", Server()->ClientName(m_ClientID), Time);
-		GameServer()->SendChatTarget(-1, aBuf);
+		GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 	}
 
 	return Pause(PAUSE_SPEC, true);

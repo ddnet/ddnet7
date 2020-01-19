@@ -84,7 +84,7 @@ void CGameContext::ConKillPlayer(IConsole::IResult *pResult, void *pUserData)
 		str_format(aBuf, sizeof(aBuf), "%s was killed by %s",
 				pSelf->Server()->ClientName(Victim),
 				pSelf->Server()->ClientName(pResult->m_ClientID));
-		pSelf->SendChatTarget(-1, aBuf);
+		pSelf->SendChat(-1, CHAT_ALL, -1, aBuf);
 	}
 }
 
@@ -378,7 +378,7 @@ void CGameContext::Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName
 	char aBuf[128];
 	str_format(aBuf, sizeof aBuf, "'%s' has been muted for %d seconds.",
 			pDisplayName, Secs);
-	SendChatTarget(-1, aBuf);
+	SendChat(-1, CHAT_ALL, -1, aBuf);
 }
 
 void CGameContext::ConMute(IConsole::IResult *pResult, void *pUserData)

@@ -759,7 +759,7 @@ void CGameContext::ConJoinTeam(IConsole::IResult *pResult, void *pUserData)
 				str_format(aBuf, sizeof(aBuf), "%s joined team %d",
 						pSelf->Server()->ClientName(pPlayer->GetCID()),
 						pResult->GetInteger(0));
-				pSelf->SendChatTarget(-1, aBuf);
+				pSelf->SendChat(-1, CHAT_ALL, -1, aBuf);
 				pPlayer->m_Last_Team = pSelf->Server()->Tick();
 			}
 			else
@@ -805,7 +805,7 @@ void CGameContext::ConMe(IConsole::IResult *pResult, void *pUserData)
 			pSelf->Server()->ClientName(pResult->m_ClientID),
 			pResult->GetString(0));
 	if (g_Config.m_SvSlashMe)
-		pSelf->SendChatTarget(-1, aBuf);
+		pSelf->SendChat(-2, CHAT_ALL, -1, aBuf, pResult->m_ClientID);
 	else
 		pSelf->Console()->Print(
 				IConsole::OUTPUT_LEVEL_STANDARD,
@@ -1074,7 +1074,7 @@ void CGameContext::ConSayTimeAll(IConsole::IResult *pResult, void *pUserData)
 			pSelf->Server()->ClientName(pResult->m_ClientID),
 			((IntTime / 60) > 9) ? "" : "0", IntTime / 60,
 			((IntTime % 60) > 9) ? "" : "0", IntTime % 60);
-	pSelf->SendChatTarget(-1, aBuftime);
+	pSelf->SendChat(-1, CHAT_ALL, -1, aBuftime, pResult->m_ClientID);
 }
 
 void CGameContext::ConTime(IConsole::IResult *pResult, void *pUserData)
