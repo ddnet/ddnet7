@@ -9,7 +9,10 @@
 
 static unsigned int Hash(char *pData, int Size)
 {
+	unsigned aDigest[4];
 	MD5_DIGEST Digest = md5(pData, Size);
+	for(int i = 0; i < 4; i++)
+		aDigest[i] = bytes_be_to_uint(&Digest.data[i * 4]);
 
 	return (Digest.data[0] ^ Digest.data[1] ^ Digest.data[2] ^ Digest.data[3]);
 }
@@ -147,8 +150,8 @@ CNetTokenCache::~CNetTokenCache()
 		CConnlessPacketInfo *pTemp = m_pConnlessPacketList->m_pNext;
 		delete m_pConnlessPacketList;
 		m_pConnlessPacketList = pTemp;
-		m_pConnlessPacketList = 0;
 	}
+	m_pConnlessPacketList = 0;
 }
 
 void CNetTokenCache::Init(NETSOCKET Socket, const CNetTokenManager *pTokenManager)
@@ -324,8 +327,7 @@ void CNetTokenCache::Update()
 	// drop expired packets
 	while(m_pConnlessPacketList && m_pConnlessPacketList->m_Expiry <= Now)
 	{
-		CConnlessPacketInfo *pNewList;
-		pNewList = m_pConnlessPacketList->m_pNext;
+		CConnlessPacketInfo *pNewList = m_pConnlessPacketList->m_pNext;
 		delete m_pConnlessPacketList;
 		m_pConnlessPacketList = pNewList;
 	}

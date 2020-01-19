@@ -86,7 +86,7 @@ void CLaser::DoBounce()
 
 	if (m_Energy < 0)
 	{
-		GameServer()->m_World.DestroyEntity(this);
+		GameWorld()->DestroyEntity(this);
 		return;
 	}
 	m_PrevPos = m_Pos;
@@ -234,7 +234,7 @@ void CLaser::DoBounce()
 
 void CLaser::Reset()
 {
-	GameServer()->m_World.DestroyEntity(this);
+	GameWorld()->DestroyEntity(this);
 }
 
 void CLaser::Tick()

@@ -242,12 +242,18 @@ void dbg_logger_stdout()
 void dbg_logger_debugger() { dbg_logger(logger_debugger); }
 void dbg_logger_file(const char *filename)
 {
-	logfile = io_open(filename, IOFLAG_WRITE);
-	if(logfile)
-		dbg_logger(logger_file);
+	IOHANDLE handle = io_open(filename, IOFLAG_WRITE);
+	if(handle)
+		dbg_logger_filehandle(handle);
 	else
 		dbg_msg("dbg/logger", "failed to open '%s' for logging", filename);
+}
 
+void dbg_logger_filehandle(IOHANDLE handle)
+{
+	logfile = handle;
+	if(logfile)
+		dbg_logger(logger_file);
 }
 
 #if defined(CONF_FAMILY_WINDOWS)
@@ -2090,12 +2096,45 @@ int str_comp_filenames(const char *a, const char *b)
 	return tolower(*a) - tolower(*b);
 }
 
+const char *str_startswith_nocase(const char *str, const char *prefix)
+{
+	int prefixl = str_length(prefix);
+	if(str_comp_nocase_num(str, prefix, prefixl) == 0)
+	{
+		return str + prefixl;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 const char *str_startswith(const char *str, const char *prefix)
 {
 	int prefixl = str_length(prefix);
 	if(str_comp_num(str, prefix, prefixl) == 0)
 	{
 		return str + prefixl;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+const char *str_endswith_nocase(const char *str, const char *suffix)
+{
+	int strl = str_length(str);
+	int suffixl = str_length(suffix);
+	const char *strsuffix;
+	if(strl < suffixl)
+	{
+		return 0;
+	}
+	strsuffix = str + strl - suffixl;
+	if(str_comp_nocase(strsuffix, suffix) == 0)
+	{
+		return strsuffix;
 	}
 	else
 	{
@@ -2736,6 +2775,11 @@ int pid()
 #else
 	return getpid();
 #endif
+}
+
+unsigned bytes_be_to_uint(const unsigned char *bytes)
+{
+	return (bytes[0]<<24) | (bytes[1]<<16) | (bytes[2]<<8) | bytes[3];
 }
 
 #if defined(__cplusplus)

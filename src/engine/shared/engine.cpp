@@ -92,9 +92,13 @@ public:
 				str_timestamp(aBuf, sizeof(aBuf));
 			else
 				aBuf[0] = 0;
-			char aLogFilename[128];			
-			str_format(aLogFilename, sizeof(aLogFilename), "%s%s", g_Config.m_Logfile, aBuf);
-			dbg_logger_file(aLogFilename);
+			char aLogFilename[128];
+			str_format(aLogFilename, sizeof(aLogFilename), "dumps/%s%s.txt", g_Config.m_Logfile, aBuf);
+			IOHANDLE Handle = m_pStorage->OpenFile(aLogFilename, IOFLAG_WRITE, IStorage::TYPE_SAVE);
+			if(Handle)
+				dbg_logger_filehandle(Handle);
+			else
+				dbg_msg("engine/logfile", "failed to open '%s' for logging", aLogFilename);
 		}
 	}
 

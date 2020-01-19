@@ -4,6 +4,7 @@
 #define GAME_SERVER_GAMECONTROLLER_H
 
 #include <base/vmath.h>
+#include <base/tl/array.h>
 
 #include <generated/protocol.h>
 
@@ -62,6 +63,46 @@ protected:
 		int m_TimeLimit;
 	} m_GameInfo;
 
+	typedef void (*COMMAND_CALLBACK)(class CPlayer *pPlayer, const char *pArgs);
+
+	//static void Com_Example(class CPlayer *pPlayer, const char *pArgs);
+
+	struct CChatCommand 
+	{
+		char m_aName[32];
+		char m_aHelpText[64];
+		char m_aArgsFormat[16];
+		COMMAND_CALLBACK m_pfnCallback;
+		bool m_Used;
+	};
+
+	class CChatCommands
+	{
+		enum
+		{
+			// 8 is the number of vanilla commands, 14 the number of commands left to fill the chat.
+			MAX_COMMANDS = 8 + 14
+		};
+
+		CChatCommand m_aCommands[MAX_COMMANDS];
+	public:
+		CChatCommands();
+
+		// Format: i = int, s = string, p = playername, c = subcommand
+		void AddCommand(const char *pName, const char *pArgsFormat, const char *pHelpText, COMMAND_CALLBACK pfnCallback);
+		void RemoveCommand(const char *pName);
+		void SendRemoveCommand(class IServer *pServer, const char *pName, int ID);
+		CChatCommand *GetCommand(const char *pName);
+
+		void OnPlayerConnect(class IServer *pServer, class CPlayer *pPlayer);
+
+		void OnInit();
+	};
+
+	CChatCommands m_Commands;
+
+	CChatCommands *CommandsManager() { return &m_Commands; }
+
 public:
 	CGameContext *GameServer() const { return m_pGameServer; }
 	IServer *Server() const { return m_pServer; }
@@ -104,6 +145,7 @@ public:
 	virtual bool OnEntity(int Index, vec2 Pos, int Layer, int Flags, int Number = 0);
 
 	const char* GetTeamName(int Team);
+	void OnPlayerCommand(class CPlayer* pPlayer, const char* pCommandName, const char* pCommandArgs);
 
 	// game
 	enum
@@ -120,7 +162,7 @@ public:
 	void UpdateGameInfo(int ClientID);
 	
 	const char *GetGameType() const { return m_pGameType; }
-	
+
 	// map
 	void ChangeMap(const char *pToMap);
 

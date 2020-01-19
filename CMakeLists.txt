@@ -17,6 +17,10 @@ else()
   message(FATAL_ERROR "Couldn't parse version from src/game/version.h")
 endif()
 
+if(POLICY CMP0072)
+  cmake_policy(SET CMP0072 OLD)
+endif()
+
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
 endif()
@@ -338,6 +342,11 @@ if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   endif()
 
   find_program(HDIUTIL hdiutil)
+  if(HDIUTIL)
+    set(HDIUTIL_FOUND ON)
+  else()
+    set(HDIUTIL_FOUND OFF)
+  endif()
 endif()
 
 message(STATUS "******** DDNet7 ********")
@@ -979,48 +988,126 @@ set(EXPECTED_DATA
   mapres/winter_mountains3.png
   "maps/Kobra 4.map"
   particles.png
+  race_flag.png
+  skins/beaver.json
   skins/bluekitty.json
   skins/bluestripe.json
+  skins/body/bat.png
   skins/body/bear.png
+  skins/body/beaver.png
+  skins/body/dog.png
+  skins/body/force.png
+  skins/body/fox.png
+  skins/body/hippo.png
   skins/body/kitty.png
+  skins/body/koala.png
+  skins/body/monkey.png
+  skins/body/mouse.png
+  skins/body/piglet.png
+  skins/body/raccoon.png
+  skins/body/spiky.png
   skins/body/standard.png
   skins/body/x_ninja.png
   skins/bot.png
   skins/brownbear.json
+  skins/bumbler.json
   skins/cammo.json
   skins/cammostripes.json
+  skins/cavebat.json
   skins/decoration/hair.png
   skins/decoration/twinbopp.png
+  skins/decoration/twinmello.png
+  skins/decoration/twinpen.png
   skins/decoration/unibop.png
+  skins/decoration/unimelo.png
+  skins/decoration/unipento.png
   skins/default.json
+  skins/eyes/colorable.png
+  skins/eyes/negative.png
   skins/eyes/standard.png
   skins/eyes/standardreal.png
   skins/eyes/x_ninja.png
   skins/feet/standard.png
+  skins/force.json
+  skins/fox.json
+  skins/greycoon.json
+  skins/greyfox.json
   skins/hands/standard.png
+  skins/hippo.json
   skins/koala.json
+  skins/limedog.json
   skins/limekitty.json
   skins/marking/bear.png
+  skins/marking/belly1.png
+  skins/marking/belly2.png
+  skins/marking/blush.png
+  skins/marking/bug.png
   skins/marking/cammo1.png
   skins/marking/cammo2.png
   skins/marking/cammostripes.png
+  skins/marking/coonfluff.png
   skins/marking/donny.png
+  skins/marking/downdony.png
   skins/marking/duodonny.png
+  skins/marking/fox.png
+  skins/marking/hipbel.png
+  skins/marking/lowcross.png
+  skins/marking/lowpaint.png
+  skins/marking/marksman.png
+  skins/marking/mice.png
+  skins/marking/mixture1.png
+  skins/marking/mixture2.png
+  skins/marking/monkey.png
+  skins/marking/panda1.png
+  skins/marking/panda2.png
+  skins/marking/purelove.png
   skins/marking/saddo.png
+  skins/marking/setisu.png
+  skins/marking/sidemarks.png
+  skins/marking/singu.png
   skins/marking/stripe.png
+  skins/marking/striped.png
   skins/marking/stripes.png
+  skins/marking/stripes2.png
+  skins/marking/thunder.png
+  skins/marking/tiger1.png
+  skins/marking/tiger2.png
   skins/marking/toptri.png
+  skins/marking/triangular.png
+  skins/marking/tricircular.png
+  skins/marking/tripledon.png
+  skins/marking/tritri.png
+  skins/marking/twinbelly.png
+  skins/marking/twincross.png
   skins/marking/twintri.png
   skins/marking/uppy.png
   skins/marking/warpaint.png
+  skins/marking/warstripes.png
   skins/marking/whisker.png
+  skins/marking/wildpaint.png
+  skins/marking/wildpatch.png
+  skins/marking/yinyang.png
+  skins/monkey.json
+  skins/paintgre.json
+  skins/pandabear.json
+  skins/panther.json
+  skins/pento.json
+  skins/piggy.json
   skins/pinky.json
+  skins/raccoon.json
   skins/redbopp.json
   skins/redstripe.json
   skins/saddo.json
+  skins/setisu.json
+  skins/snowti.json
+  skins/spiky.json
+  skins/swardy.json
+  skins/tiger.json
+  skins/tooxy.json
   skins/toptri.json
   skins/twinbop.json
   skins/twintri.json
+  skins/warmouse.json
   skins/warpaint.json
   skins/x_ninja.json
   skins/xmas_hat.png
@@ -1035,6 +1122,7 @@ set(EXPECTED_DATA
   ui/gametypes/lms.png
   ui/gametypes/lts.png
   ui/gametypes/mod.png
+  ui/gametypes/race.png
   ui/gametypes/tdm.png
   ui/gui_buttons.png
   ui/gui_cursor.png
@@ -1042,11 +1130,13 @@ set(EXPECTED_DATA
   ui/gui_logo.png
   ui/icons/arrows.png
   ui/icons/browse.png
+  ui/icons/browser.png
   ui/icons/chat_whisper.png
   ui/icons/friend.png
   ui/icons/level.png
   ui/icons/menu.png
   ui/icons/sidebar.png
+  ui/icons/timer_clock.png
   ui/icons/tools.png
   ui/menuimages/demos.png
   ui/menuimages/editor.png
@@ -1062,6 +1152,9 @@ set(EXPECTED_DATA
   ui/themes/jungle_day.map
   ui/themes/jungle_night.map
   ui/themes/none.png
+  ui/themes/winter.png
+  ui/themes/winter_day.map
+  ui/themes/winter_night.map
 )
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/datasrc/languages/index.json)
@@ -1181,10 +1274,10 @@ set_src(ENGINE_INTERFACE GLOB src/engine
   client.h
   config.h
   console.h
+  contacts.h
   demo.h
   editor.h
   engine.h
-  friends.h
   graphics.h
   input.h
   kernel.h
@@ -1312,8 +1405,8 @@ if(CLIENT)
     backend_sdl.h
     client.cpp
     client.h
-    friends.cpp
-    friends.h
+    contacts.cpp
+    contacts.h
     graphics_threaded.cpp
     graphics_threaded.h
     input.cpp
@@ -1360,10 +1453,10 @@ if(CLIENT)
     components/flow.h
     components/hud.cpp
     components/hud.h
+    components/infomessages.cpp
+    components/infomessages.h
     components/items.cpp
     components/items.h
-    components/killmessages.cpp
-    components/killmessages.h
     components/mapimages.cpp
     components/mapimages.h
     components/maplayers.cpp
@@ -1888,6 +1981,19 @@ if(DMGTOOLS_FOUND OR HDIUTIL)
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${DMG_TMPDIR}
     ${DMG_MKDIR_COMMANDS}
 
+<<<<<<< HEAD
+=======
+    # CLIENT
+    COMMAND ${CMAKE_COMMAND} -E copy_directory data ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/data
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${TARGET_CLIENT}.icns ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Resources/
+    COMMAND ${CMAKE_COMMAND} -E copy bundle/client/Info.plist ${PROJECT_SOURCE_DIR}/other/bundle/client/PkgInfo ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET_CLIENT}> ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/
+    COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_LIBRARY} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/libSDL2-2.0.0.dylib
+    COMMAND ${CMAKE_COMMAND} -E copy ${FREETYPE_LIBRARY} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/Frameworks/libfreetype.6.dylib
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} SDL2 @executable_path/../Frameworks/libSDL2-2.0.0.dylib
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/darwin_change_dylib.py change --tools ${CMAKE_INSTALL_NAME_TOOL} ${CMAKE_OTOOL} ${DMG_TMPDIR}/${TARGET_CLIENT}.app/Contents/MacOS/${TARGET_CLIENT} libfreetype @executable_path/../Frameworks/libfreetype.6.dylib
+
+>>>>>>> tw/master
     # SERVER
     COMMAND ${CMAKE_COMMAND} -E copy_directory data/maps ${DMG_TMPDIR}/${TARGET_SERVER}.app/Contents/Resources/data/maps
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/other/icons/${TARGET_SERVER}.icns ${DMG_TMPDIR}/${TARGET_SERVER}.app/Contents/Resources/

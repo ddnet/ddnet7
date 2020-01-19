@@ -157,7 +157,7 @@ void CServerBan::InitServerBan(IConsole *pConsole, IStorage *pStorage, CServer* 
 	m_pServer = pServer;
 
 	// overwrites base command, todo: improve this
-	Console()->Register("ban", "s?ir", CFGFLAG_SERVER|CFGFLAG_STORE, ConBanExt, this, "Ban player with ip/client id for x minutes for any reason");
+	Console()->Register("ban", "s?ir", CFGFLAG_SERVER|CFGFLAG_STORE, ConBanExt, this, "Ban player with IP/IP range/client id for x minutes for any reason");
 }
 
 template<class T>
@@ -1211,7 +1211,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 						Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 					}
 				}
-				else if(g_Config.m_SvRconMaxTries)
+				else if(g_Config.m_SvRconMaxTries && m_ServerBan.IsBannable(m_NetServer.ClientAddr(ClientID)))
 				{
 					m_aClients[ClientID].m_AuthTries++;
 					char aBuf[128];
@@ -1297,8 +1297,10 @@ void CServer::GenerateServerInfo(CPacker *pPacker, int Token)
 	pPacker->AddString(GameServer()->GameType(), 16);
 
 	// flags
-	int Flag = g_Config.m_Password[0] ? SERVERINFO_FLAG_PASSWORD : 0;	// password set
-	pPacker->AddInt(Flag);
+	int Flags = SERVERINFO_FLAG_TIMESCORE;
+	if(g_Config.m_Password[0])  // password set
+		Flags |= SERVERINFO_FLAG_PASSWORD;
+	pPacker->AddInt(Flags);
 
 	pPacker->AddInt(g_Config.m_SvSkillLevel);	// server skill level
 	pPacker->AddInt(PlayerCount); // num players

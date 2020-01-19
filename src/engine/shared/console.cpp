@@ -516,17 +516,17 @@ void CConsole::ExecuteLineFlag(const char* pStr, int FlagMask, int ClientID, boo
 }
 
 
-void CConsole::ExecuteFile(const char* pFilename, int ClientID, bool LogFailure, int StorageType)
+bool CConsole::ExecuteFile(const char* pFilename, int ClientID, bool LogFailure, int StorageType)
 {
 	// make sure that this isn't being executed already
 	for (CExecFile* pCur = m_pFirstExec; pCur; pCur = pCur->m_pPrev)
 		if (str_comp(pFilename, pCur->m_pFilename) == 0)
-			return;
+			return false;
 
 	if (!m_pStorage)
 		m_pStorage = Kernel()->RequestInterface<IStorage>();
 	if (!m_pStorage)
-		return;
+		return false;
 
 	// push this one to the stack
 	CExecFile ThisFile;
@@ -560,6 +560,7 @@ void CConsole::ExecuteFile(const char* pFilename, int ClientID, bool LogFailure,
 	}
 
 	m_pFirstExec = pPrev;
+	return (bool)File;
 }
 
 void CConsole::Con_Echo(IResult *pResult, void *pUserData)
@@ -930,7 +931,7 @@ void CConsole::Register(const char *pName, const char *pParams,
 	bool DoAdd = false;
 	if(pCommand == 0)
 	{
-		pCommand = new(mem_alloc(sizeof(CCommand), sizeof(void*))) CCommand;
+		pCommand = new(mem_alloc(sizeof(CCommand), sizeof(void*))) CCommand();
 		DoAdd = true;
 	}
 	pCommand->m_pfnCallback = pfnFunc;
@@ -964,7 +965,7 @@ void CConsole::RegisterTemp(const char *pName, const char *pParams,	int Flags, c
 	}
 	else
 	{
-		pCommand = new(m_TempCommands.Allocate(sizeof(CCommand))) CCommand;
+		pCommand = new(m_TempCommands.Allocate(sizeof(CCommand))) CCommand();
 		char *pMem = static_cast<char *>(m_TempCommands.Allocate(TEMPCMD_NAME_LENGTH));
 		str_copy(pMem, pName, TEMPCMD_NAME_LENGTH);
 		pCommand->m_pName = pMem;

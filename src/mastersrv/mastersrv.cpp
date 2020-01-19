@@ -288,6 +288,7 @@ int main(int argc, const char **argv) // ignore_convention
 
 	dbg_logger_stdout();
 	net_init();
+	CNetBase::Init();
 
 	mem_copy(m_CountData.m_Header, SERVERBROWSE_COUNT, sizeof(SERVERBROWSE_COUNT));
 
@@ -322,6 +323,11 @@ int main(int argc, const char **argv) // ignore_convention
 		BindAddr.port = MASTERSERVER_PORT;
 	}
 
+	if(secure_random_init() != 0)
+	{
+		dbg_msg("mastersrv", "could not initialize secure RNG");
+		return -1;
+	}
 	if(!m_NetOp.Open(BindAddr, 0))
 	{
 		dbg_msg("mastersrv", "couldn't start network (op)");
