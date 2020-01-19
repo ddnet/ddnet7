@@ -813,16 +813,6 @@ void CGameContext::ConMe(IConsole::IResult *pResult, void *pUserData)
 				"/me is disabled on this server");
 }
 
-void CGameContext::ConConverse(IConsole::IResult *pResult, void *pUserData)
-{
-	// This will never be called
-}
-
-void CGameContext::ConWhisper(IConsole::IResult *pResult, void *pUserData)
-{
-	// This will never be called
-}
-
 void CGameContext::ConSetEyeEmote(IConsole::IResult *pResult,
 		void *pUserData)
 {

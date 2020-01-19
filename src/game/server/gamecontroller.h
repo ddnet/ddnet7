@@ -63,9 +63,9 @@ protected:
 		int m_TimeLimit;
 	} m_GameInfo;
 
-	typedef void (*COMMAND_CALLBACK)(class CPlayer *pPlayer, const char *pArgs);
+	typedef void (*COMMAND_CALLBACK)(CGameContext *pGameServer, int ClientID, const char *pArgs);
 
-	//static void Com_Example(class CPlayer *pPlayer, const char *pArgs);
+	static void Com_CmdList(CGameContext* pGameServer, int ClientID, const char* pArgs);
 
 	struct CChatCommand 
 	{
@@ -100,8 +100,6 @@ protected:
 	};
 
 	CChatCommands m_Commands;
-
-	CChatCommands *CommandsManager() { return &m_Commands; }
 
 public:
 	CGameContext *GameServer() const { return m_pGameServer; }
@@ -157,6 +155,8 @@ public:
 	// general
 	virtual void Snap(int SnappingClient);
 	virtual void Tick();
+
+	CChatCommands *CommandsManager() { return &m_Commands; }
 
 	// info
 	void UpdateGameInfo(int ClientID);

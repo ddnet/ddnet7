@@ -598,6 +598,17 @@ IGameController::CChatCommand *IGameController::CChatCommands::GetCommand(const 
 
 void IGameController::CChatCommands::OnPlayerConnect(IServer *pServer, CPlayer *pPlayer)
 {
+	// Remove the clientside commands (expect w)
+	{
+		SendRemoveCommand(pServer, "all", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "friend", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "m", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "mute", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "r", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "team", pPlayer->GetCID());
+		SendRemoveCommand(pServer, "whisper", pPlayer->GetCID());
+	}
+
 	for(int i = 0; i < MAX_COMMANDS; i++)
 	{
 		CChatCommand *pCommand = &m_aCommands[i];
@@ -619,16 +630,22 @@ void IGameController::OnPlayerCommand(CPlayer *pPlayer, const char *pCommandName
 	// TODO: Add a argument parser?
 	CChatCommand *pCommand = CommandsManager()->GetCommand(pCommandName);
 
-	if(pCommand)
-		pCommand->m_pfnCallback(pPlayer, pCommandArgs);
+	if(pCommand && pCommand->m_pfnCallback)
+		pCommand->m_pfnCallback(GameServer(), pPlayer->GetCID(), pCommandArgs);
+	else
+		GameServer()->ExecuteChatCommand(pCommandArgs, pPlayer->GetCID());
 }
 
 void IGameController::CChatCommands::OnInit()
 {
-	//AddCommand("example", "si", "I am a description", Com_Example);
+	// Add some important commands, client wont sort alphabetically!
+	AddCommand("cmdlist", "", "List all commands which are accessible for you", 0);
+	AddCommand("credits", "", "Shows the credits of the F-DDrace mod", 0);
+	AddCommand("info", "", "Shows info about this server", 0);
+	AddCommand("For a full list of commands:", "", "/cmdlist", Com_CmdList);
 }
 
-/*void IGameController::Com_Example(class CPlayer *pPlayer, const char *pArgs)
+void IGameController::Com_CmdList(CGameContext* pGameServer, int ClientID, const char* pArgs)
 {
-	// Do something with the player here
-}*/
+	pGameServer->ExecuteChatCommand("/cmdlist", ClientID);
+}
