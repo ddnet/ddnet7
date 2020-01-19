@@ -329,6 +329,9 @@ public:
 
 	// DDrace
 	void GetClientAddr(int ClientID, NETADDR* pAddr);
+	const char* GetAnnouncementLine(char const* FileName);
+	unsigned m_AnnouncementLastLine;
+
 #if defined (CONF_SQL)
 	// console commands for sqlmasters
 	static void ConAddSqlServer(IConsole::IResult *pResult, void *pUserData);

@@ -703,6 +703,13 @@ void CGameContext::OnTick()
 		}
 	}
 
+	if (Server()->Tick() % (g_Config.m_SvAnnouncementInterval * Server()->TickSpeed() * 60) == 0)
+	{
+		const char* Line = Server()->GetAnnouncementLine(g_Config.m_SvAnnouncementFileName);
+		if (Line)
+			SendChat(-1, CHAT_ALL, -1, Line);
+	}
+
 	if (Collision()->m_NumSwitchers > 0)
 		for (int i = 0; i < Collision()->m_NumSwitchers + 1; ++i)
 		{
