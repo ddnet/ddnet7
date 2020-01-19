@@ -1816,7 +1816,7 @@ void CServer::ConchainMaxclientsperipUpdate(IConsole::IResult *pResult, void *pU
 		((CServer *)pUserData)->m_NetServer.SetMaxClientsPerIP(pResult->GetInteger(0));
 }
 
-void CServer::ConchainModCommandUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
+void CServer::ConchainCommandAccessUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData)
 {
 	if(pResult->NumArguments() == 2)
 	{
@@ -1830,11 +1830,13 @@ void CServer::ConchainModCommandUpdate(IConsole::IResult *pResult, void *pUserDa
 		{
 			for(int i = 0; i < MAX_CLIENTS; ++i)
 			{
-				if(pThis->m_aClients[i].m_State == CServer::CClient::STATE_EMPTY || pThis->m_aClients[i].m_Authed != CServer::AUTHED_MOD ||
-					(pThis->m_aClients[i].m_pRconCmdToSend && str_comp(pResult->GetString(0), pThis->m_aClients[i].m_pRconCmdToSend->m_pName) >= 0))
+				if(pThis->m_aClients[i].m_State == CServer::CClient::STATE_EMPTY ||
+				(pInfo->GetAccessLevel() > AUTHED_ADMIN - pThis->m_aClients[i].m_Authed && AUTHED_ADMIN - pThis->m_aClients[i].m_Authed < OldAccessLevel) ||
+				(pInfo->GetAccessLevel() < AUTHED_ADMIN - pThis->m_aClients[i].m_Authed && AUTHED_ADMIN - pThis->m_aClients[i].m_Authed > OldAccessLevel) ||
+				(pThis->m_aClients[i].m_pRconCmdToSend && str_comp(pResult->GetString(0), pThis->m_aClients[i].m_pRconCmdToSend->m_pName) >= 0))
 					continue;
 
-				if(OldAccessLevel == IConsole::ACCESS_LEVEL_ADMIN)
+				if(OldAccessLevel < pInfo->GetAccessLevel())
 					pThis->SendRconCmdAdd(pInfo, i);
 				else
 					pThis->SendRconCmdRem(pInfo, i);
@@ -1886,7 +1888,7 @@ void CServer::RegisterCommands()
 	Console()->Chain("password", ConchainSpecialInfoupdate, this);
 
 	Console()->Chain("sv_max_clients_per_ip", ConchainMaxclientsperipUpdate, this);
-	Console()->Chain("mod_command", ConchainModCommandUpdate, this);
+	Console()->Chain("access_level", ConchainCommandAccessUpdate, this);
 	Console()->Chain("console_output_level", ConchainConsoleOutputLevelUpdate, this);
 	Console()->Chain("sv_rcon_password", ConchainRconPasswordSet, this);
 
