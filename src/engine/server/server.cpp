@@ -32,6 +32,10 @@
 #include "register.h"
 #include "server.h"
 
+#include <string.h>
+#include <vector>
+#include <engine/shared/linereader.h>
+
 #if defined(CONF_FAMILY_WINDOWS)
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
