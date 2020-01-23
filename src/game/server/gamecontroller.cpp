@@ -640,7 +640,7 @@ void IGameController::CChatCommands::OnInit()
 {
 	// Add some important commands, client wont sort alphabetically!
 	AddCommand("cmdlist", "", "List all commands which are accessible for you", 0);
-	AddCommand("credits", "", "Shows the credits of the F-DDrace mod", 0);
+	AddCommand("credits", "", "Shows the credits of the DDNet mod", 0);
 	AddCommand("info", "", "Shows info about this server", 0);
 	AddCommand("For a full list of commands:", "", "/cmdlist", Com_CmdList);
 }
