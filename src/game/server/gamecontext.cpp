@@ -439,7 +439,6 @@ void CGameContext::StartVote(const char *pDesc, const char *pCommand, const char
 	m_VoteUpdate = true;
 }
 
-
 void CGameContext::EndVote(int Type, bool Force)
 {
 	m_VoteCloseTime = 0;
