@@ -639,9 +639,12 @@ void IGameController::OnPlayerCommand(CPlayer *pPlayer, const char *pCommandName
 void IGameController::CChatCommands::OnInit()
 {
 	// Add some important commands, client wont sort alphabetically!
-	AddCommand("cmdlist", "", "List all commands which are accessible for you", 0);
+	AddCommand("cmdlist", "", "List all commands which are accessible for users", 0);
 	AddCommand("credits", "", "Shows the credits of the DDNet mod", 0);
 	AddCommand("info", "", "Shows info about this server", 0);
+	AddCommand("mapinfo", "", "?r[map] Show info about the map with name r", 0);
+	AddCommand("points", "", "?r[name] Shows the global points of a player with name r", 0);
+	AddCommand("rank", "", "?r[name] Shows the rank of player with name r", 0);
 	AddCommand("For a full list of commands:", "", "/cmdlist", Com_CmdList);
 }
 
