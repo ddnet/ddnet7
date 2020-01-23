@@ -1414,6 +1414,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		{
 			if(pPlayer->m_LastKill && pPlayer->m_LastKill+Server()->TickSpeed()*3 > Server()->Tick())
 				return;
+			if (pPlayer->IsPaused())
+				return;
 
 			CCharacter *pChr = pPlayer->GetCharacter();
 			if(!pChr)
