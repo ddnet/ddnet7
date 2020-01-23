@@ -34,7 +34,6 @@ CProjectile::CProjectile
 	m_InitialLifeSpan = Span;
 	m_LifeSpan = Span;
 	m_Owner = Owner;
-	m_OwnerTeam = GameServer()->m_apPlayers[Owner]->GetTeam();
 	m_Force = Force;
 	m_SoundImpact = SoundImpact;
 	m_StartTick = Server()->Tick();
