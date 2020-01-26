@@ -96,5 +96,5 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: teeworlds-${{ matrix.os }}
+        name: ddnet7-${{ matrix.os }}
         path: release/artifacts
