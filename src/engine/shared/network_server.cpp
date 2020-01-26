@@ -181,6 +181,7 @@ int CNetServer::Recv(CNetChunk *pChunk, TOKEN *pResponseToken)
 					{
 						const char FullMsg[] = "This server is full";
 						CNetBase::SendControlMsg(m_Socket, &Addr, m_RecvUnpacker.m_Data.m_ResponseToken, 0, NET_CTRLMSG_CLOSE, FullMsg, sizeof(FullMsg));
+						continue;
 					}
 
 					bool Found = false;
