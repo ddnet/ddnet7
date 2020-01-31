@@ -20,14 +20,22 @@ CGameWorld::CGameWorld()
 	m_ResetRequested = false;
 	for(int i = 0; i < NUM_ENTTYPES; i++)
 		m_apFirstEntityTypes[i] = 0;
+
+	m_pNextTraverseEntity = 0;
 }
 
 CGameWorld::~CGameWorld()
 {
 	// delete all entities
 	for(int i = 0; i < NUM_ENTTYPES; i++)
+	{
 		while(m_apFirstEntityTypes[i])
-			delete m_apFirstEntityTypes[i];
+		{
+			CEntity *pEnt = m_apFirstEntityTypes[i];
+			RemoveEntity(pEnt);
+			delete pEnt;
+		}
+	}
 }
 
 void CGameWorld::SetGameServer(CGameContext *pGameServer)
