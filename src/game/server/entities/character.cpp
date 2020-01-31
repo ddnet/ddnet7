@@ -612,7 +612,7 @@ void CCharacter::HandleSkippableTiles(int Index)
 
 void CCharacter::HandleTiles(std::list<int> &Indices)
 {
-	CGameControllerDDRace *pController = (CGameControllerDDRace *)GameServer()->m_pController;
+	//CGameControllerDDRace *pController = (CGameControllerDDRace *)GameServer()->m_pController;
 	for(auto i : Indices)
 	{
 		int TileIndex = GameServer()->Collision()->GetTileIndex(i);
