@@ -1,8 +1,4 @@
-<a href="https://repology.org/metapackage/teeworlds/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/teeworlds.svg" alt="Packaging status" align="right">
-</a>
-
-Teeworlds [![CircleCI](https://circleci.com/gh/teeworlds/teeworlds.svg?style=svg)](https://circleci.com/gh/teeworlds/teeworlds) [![Travis CI Build Status](https://travis-ci.org/teeworlds/teeworlds.svg?branch=master)](https://travis-ci.org/teeworlds/teeworlds) [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/teeworlds/teeworlds?branch=master&svg=true)](https://ci.appveyor.com/project/heinrich5991/teeworlds)
+Teeworlds ![](https://github.com/ddnet/ddnet7/workflows/Build/badge.svg?branch=d7)
 =========
 
 A retro multiplayer shooter
@@ -133,10 +129,3 @@ click "Finish". Wait a bit (until the progress bar is full). Then click
 "Generate".
 
 You can now build Teeworlds by executing `mingw32-make` in the build directory.
-
-
-Building with bam, guides for all operating systems
-===================================================
-
-You can also compile Teeworlds with bam, a custom build system. Instructions
-for that can be found at https://www.teeworlds.com/?page=docs&wiki=hacking.
