@@ -472,25 +472,19 @@ Messages = [
 	NetMessage("Sv_Checkpoint", [
 		NetIntAny("m_Diff"),
 	]),
-  
-    NetMessage("Sv_CommandInfo", [
-            NetStringStrict("m_pName"),
-            NetStringStrict("m_ArgsFormat"),
-            NetStringStrict("m_HelpText")
-    ]),
 
-    NetMessage("Sv_CommandInfoRemove", [
-            NetStringStrict("m_pName")
-    ]),
+	NetMessage("Sv_CommandInfo", [
+			NetStringStrict("m_Name"),
+			NetStringStrict("m_ArgsFormat"),
+			NetStringStrict("m_HelpText")
+	]),
 
-    NetMessage("Cl_Command", [
-            NetStringStrict("m_Name"),
-            NetStringStrict("m_Arguments")
-    ]),
-  
-	# Can't add any NetMessages here!
+	NetMessage("Sv_CommandInfoRemove", [
+			NetStringStrict("m_Name")
+	]),
 
-	NetMessageEx("Sv_MyOwnMessage", "my-own-message@heinrich5991.de", [
-		NetIntAny("m_Test"),
+	NetMessage("Cl_Command", [
+			NetStringStrict("m_Name"),
+			NetStringStrict("m_Arguments")
 	]),
 ]

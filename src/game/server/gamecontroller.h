@@ -6,6 +6,8 @@
 #include <base/vmath.h>
 #include <base/tl/array.h>
 
+#include <game/commands.h>
+
 #include <generated/protocol.h>
 
 /*
@@ -39,7 +41,7 @@ class IGameController
 	};
 	vec2 m_aaSpawnPoints[3][64];
 	int m_aNumSpawnPoints[3];
-	
+
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
 	void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
 
@@ -62,44 +64,6 @@ protected:
 		int m_ScoreLimit;
 		int m_TimeLimit;
 	} m_GameInfo;
-
-	typedef void (*COMMAND_CALLBACK)(CGameContext *pGameServer, int ClientID, const char *pArgs);
-
-	static void Com_CmdList(CGameContext* pGameServer, int ClientID, const char* pArgs);
-
-	struct CChatCommand 
-	{
-		char m_aName[32];
-		char m_aHelpText[64];
-		char m_aArgsFormat[16];
-		COMMAND_CALLBACK m_pfnCallback;
-		bool m_Used;
-	};
-
-	class CChatCommands
-	{
-		enum
-		{
-			// 8 is the number of vanilla commands, 14 the number of commands left to fill the chat.
-			MAX_COMMANDS = 8 + 14
-		};
-
-		CChatCommand m_aCommands[MAX_COMMANDS];
-	public:
-		CChatCommands();
-
-		// Format: i = int, s = string, p = playername, c = subcommand
-		void AddCommand(const char *pName, const char *pArgsFormat, const char *pHelpText, COMMAND_CALLBACK pfnCallback);
-		void RemoveCommand(const char *pName);
-		void SendRemoveCommand(class IServer *pServer, const char *pName, int ID);
-		CChatCommand *GetCommand(const char *pName);
-
-		void OnPlayerConnect(class IServer *pServer, class CPlayer *pPlayer);
-
-		void OnInit();
-	};
-
-	CChatCommands m_Commands;
 
 public:
 	CGameContext *GameServer() const { return m_pGameServer; }
@@ -160,7 +124,7 @@ public:
 
 	// info
 	void UpdateGameInfo(int ClientID);
-	
+
 	const char *GetGameType() const { return m_pGameType; }
 
 	// map
@@ -176,9 +140,11 @@ public:
 	void ResetGame();
 	void StartRound();
 
+	static void Com_Example(IConsole::IResult *pResult, void *pContext);
+	virtual void RegisterChatCommands(CCommandManager *pManager);
+
 	// DDrace
 
 	float m_CurrentRecord;
 };
-
 #endif

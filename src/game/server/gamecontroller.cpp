@@ -47,9 +47,6 @@ IGameController::IGameController(CGameContext *pGameServer)
 	m_aNumSpawnPoints[1] = 0;
 	m_aNumSpawnPoints[2] = 0;
 
-	// commands
-	CommandsManager()->OnInit();
-
 	// DDrace
 	m_CurrentRecord = 0;
 }
@@ -541,116 +538,15 @@ const char* IGameController::GetTeamName(int Team)
 	return "spectators";
 }
 
-IGameController::CChatCommands::CChatCommands()
+void IGameController::Com_Example(IConsole::IResult *pResult, void *pContext)
 {
-	mem_zero(m_aCommands, sizeof(m_aCommands));
+	CCommandManager::SCommandContext *pComContext = (CCommandManager::SCommandContext *)pContext;
+	IGameController *pSelf = (IGameController *)pComContext->m_pContext;
+
+	pSelf->GameServer()->SendBroadcast(pResult->GetString(0), -1);
 }
 
-void IGameController::CChatCommands::AddCommand(const char *pName, const char *pArgsFormat, const char *pHelpText, COMMAND_CALLBACK pfnCallback)
+void IGameController::RegisterChatCommands(CCommandManager *pManager)
 {
-	if(GetCommand(pName))
-		return;
-
-	for(int i = 0; i < MAX_COMMANDS; i++)
-	{
-		if(!m_aCommands[i].m_Used)
-		{
-			mem_zero(&m_aCommands[i], sizeof(CChatCommand));
-
-			str_copy(m_aCommands[i].m_aName, pName, sizeof(m_aCommands[i].m_aName));
-			str_copy(m_aCommands[i].m_aHelpText, pHelpText, sizeof(m_aCommands[i].m_aHelpText));
-			str_copy(m_aCommands[i].m_aArgsFormat, pArgsFormat, sizeof(m_aCommands[i].m_aArgsFormat));
-
-			m_aCommands[i].m_pfnCallback = pfnCallback;
-			m_aCommands[i].m_Used = true;
-			break;
-		}
-	}
-}
-
-void IGameController::CChatCommands::SendRemoveCommand(IServer *pServer, const char *pName, int ID)
-{
-	CNetMsg_Sv_CommandInfoRemove Msg;
-	Msg.m_pName = pName;
-
-	pServer->SendPackMsg(&Msg, MSGFLAG_VITAL, ID);
-}
-
-void IGameController::CChatCommands::RemoveCommand(const char *pName)
-{
-	CChatCommand *pCommand = GetCommand(pName);
-
-	if(pCommand)
-	{
-		mem_zero(pCommand, sizeof(CChatCommand));
-	}
-}
-
-IGameController::CChatCommand *IGameController::CChatCommands::GetCommand(const char *pName)
-{
-	for(int i = 0; i < MAX_COMMANDS; i++)
-	{
-		if(m_aCommands[i].m_Used && str_comp(m_aCommands[i].m_aName, pName) == 0)
-		{
-			return &m_aCommands[i];
-		}
-	}
-	return 0;
-}
-
-void IGameController::CChatCommands::OnPlayerConnect(IServer *pServer, CPlayer *pPlayer)
-{
-	// Remove the clientside commands (expect w)
-	{
-		SendRemoveCommand(pServer, "all", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "friend", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "m", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "mute", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "r", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "team", pPlayer->GetCID());
-		SendRemoveCommand(pServer, "whisper", pPlayer->GetCID());
-	}
-
-	for(int i = 0; i < MAX_COMMANDS; i++)
-	{
-		CChatCommand *pCommand = &m_aCommands[i];
-
-		if(pCommand->m_Used)
-		{
-			CNetMsg_Sv_CommandInfo Msg;
-			Msg.m_pName = pCommand->m_aName;
-			Msg.m_HelpText = pCommand->m_aHelpText;
-			Msg.m_ArgsFormat = pCommand->m_aArgsFormat;
-
-			pServer->SendPackMsg(&Msg, MSGFLAG_VITAL, pPlayer->GetCID());
-		}
-	}
-}
-
-void IGameController::OnPlayerCommand(CPlayer *pPlayer, const char *pCommandName, const char *pCommandArgs)
-{
-	// TODO: Add a argument parser?
-	CChatCommand *pCommand = CommandsManager()->GetCommand(pCommandName);
-
-	if(pCommand && pCommand->m_pfnCallback)
-		pCommand->m_pfnCallback(GameServer(), pPlayer->GetCID(), pCommandArgs);
-	else
-		GameServer()->ExecuteChatCommand(pCommandArgs, pPlayer->GetCID());
-}
-
-void IGameController::CChatCommands::OnInit()
-{
-	// Add some important commands, client wont sort alphabetically!
-	AddCommand("cmdlist", "", "List all commands which are accessible for users", 0);
-	AddCommand("credits", "", "Shows the credits of the DDNet mod", 0);
-	AddCommand("info", "", "Shows info about this server", 0);
-	AddCommand("mapinfo", "", "?r[map] Show info about the map with name r", 0);
-	AddCommand("points", "", "?r[name] Shows the global points of a player with name r", 0);
-	AddCommand("rank", "", "?r[name] Shows the rank of player with name r", 0);
-	AddCommand("For a full list of commands:", "", "/cmdlist", Com_CmdList);
-}
-
-void IGameController::Com_CmdList(CGameContext* pGameServer, int ClientID, const char* pArgs)
-{
-	pGameServer->ExecuteChatCommand("/cmdlist", ClientID);
+	pManager->AddCommand("test", "Test the command system", "r", Com_Example, this);
 }
