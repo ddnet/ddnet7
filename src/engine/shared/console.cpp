@@ -374,7 +374,7 @@ void CConsole::ExecuteLineStroked(int Stroke, const char* pStr, int ClientID, bo
 
 		if (pCommand)
 		{
-			if ((pCommand->m_Flags&CMDFLAG_TEST) && !m_pConfig->m_SvTestingCommands)
+			if ((pCommand->m_Flags&CMDFLAG_TEST) && !g_Config.m_SvTestingCommands)
 			{
 				if (Stroke)
 				{
