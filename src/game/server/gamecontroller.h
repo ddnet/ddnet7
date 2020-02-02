@@ -140,7 +140,7 @@ public:
 	void ResetGame();
 	void StartRound();
 
-	static void Com_Example(IConsole::IResult *pResult, void *pContext);
+	//static void Com_Example(IConsole::IResult *pResult, void *pContext);
 	virtual void RegisterChatCommands(CCommandManager *pManager);
 
 	// DDrace
