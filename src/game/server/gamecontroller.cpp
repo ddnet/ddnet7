@@ -64,6 +64,8 @@ bool IGameController::CanSpawn(int Team, vec2 *pOutPos) const
 	Eval.m_RandomSpawn = false;
 
 	EvaluateSpawnType(&Eval, 0);
+	EvaluateSpawnType(&Eval, 1);
+	EvaluateSpawnType(&Eval, 2);
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
