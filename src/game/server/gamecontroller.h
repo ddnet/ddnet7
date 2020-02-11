@@ -120,8 +120,6 @@ public:
 	virtual void Snap(int SnappingClient);
 	virtual void Tick();
 
-	CChatCommands *CommandsManager() { return &m_Commands; }
-
 	// info
 	void UpdateGameInfo(int ClientID);
 

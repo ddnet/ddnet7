@@ -2207,6 +2207,7 @@ void CGameContext::OnInit()
 
 	m_pController = new CGameControllerDDRace(this);
 	((CGameControllerDDRace*)m_pController)->m_Teams.Reset();
+	m_pController->RegisterChatCommands(CommandManager());
 
 	m_TeeHistorianActive = g_Config.m_SvTeeHistorian;
 	if(m_TeeHistorianActive)
