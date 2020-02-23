@@ -24,6 +24,13 @@ void CNetRecvUnpacker::Start(const NETADDR *pAddr, CNetConnection *pConnection, 
 // TODO: rename this function
 int CNetRecvUnpacker::FetchChunk(CNetChunk *pChunk)
 {
+	// Don't bother with connections that already went offline
+	if(m_pConnection && m_pConnection->State() != NET_CONNSTATE_ONLINE)
+	{
+		Clear();
+		return 0;
+	}
+
 	CNetChunkHeader Header;
 	unsigned char *pEnd = m_Data.m_aChunkData + m_Data.m_DataSize;
 
@@ -247,7 +254,7 @@ int CNetBase::UnpackPacket(unsigned char *pBuffer, int Size, CNetPacketConstruct
 		pPacket->m_Token = (pBuffer[3] << 24) | (pBuffer[4] << 16) | (pBuffer[5] << 8) | pBuffer[6];
 			// TTTTTTTT TTTTTTTT TTTTTTTT TTTTTTTT
 		pPacket->m_ResponseToken = NET_TOKEN_NONE;
-		
+
 		if(pPacket->m_Flags&NET_PACKETFLAG_COMPRESSION)
 			pPacket->m_DataSize = Decompress(&pBuffer[NET_PACKETHEADERSIZE], pPacket->m_DataSize, pPacket->m_aChunkData, sizeof(pPacket->m_aChunkData));
 		else
