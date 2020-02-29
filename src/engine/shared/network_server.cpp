@@ -184,8 +184,6 @@ int CNetServer::Recv(CNetChunk *pChunk, TOKEN *pResponseToken)
 						continue;
 					}
 
-					bool Found = false;
-
 					// only allow a specific number of players with the same ip
 					NETADDR ThisAddr = Addr, OtherAddr;
 					int FoundAddr = 1;
