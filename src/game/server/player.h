@@ -165,7 +165,6 @@ public:
 	bool m_ShowAll;
 	bool m_SpecTeam;
 	bool m_NinjaJetpack;
-	bool m_Afk;
 	int m_KillMe;
 	bool m_HasFinishScore;
 
@@ -191,6 +190,9 @@ public:
 #endif
 	bool m_NotEligibleForFinish;
 	int64 m_EligibleForFinishCheck;
+
+	bool m_Aim;
+	bool m_Afk;
 };
 
 #endif

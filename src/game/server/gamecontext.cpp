@@ -1532,6 +1532,11 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			CNetMsg_Cl_Command *pMsg = (CNetMsg_Cl_Command*)pRawMsg;
 			m_pController->OnPlayerCommand(pPlayer, pMsg->m_Name, pMsg->m_Arguments);
 		}
+		else if (MsgID == NETMSGTYPE_CL_EXPLAYERINFO)
+		{
+			CNetMsg_Cl_ExPlayerInfo *pMsg = (CNetMsg_Cl_ExPlayerInfo *)pRawMsg;
+			pPlayer->m_Aim = (bool)pMsg->m_Flags&EXPLAYERFLAG_AIM;
+		}
 	}
 	else
 	{

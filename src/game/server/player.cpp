@@ -260,8 +260,6 @@ void CPlayer::Snap(int SnappingClient)
 		pPlayerInfo->m_PlayerFlags |= PLAYERFLAG_DEAD;
 	if(SnappingClient != -1 && (m_Team == TEAM_SPECTATORS || m_Paused) && (SnappingClient == m_SpectatorID))
 		pPlayerInfo->m_PlayerFlags |= PLAYERFLAG_WATCHING;
-	if (m_PlayerFlags&PLAYERFLAG_AIM)
-		pPlayerInfo->m_PlayerFlags |= PLAYERFLAG_AIM;
 
 	pPlayerInfo->m_Latency = SnappingClient == -1 ? m_Latency.m_Min : GameServer()->m_apPlayers[SnappingClient]->m_aActLatency[m_ClientID];
 	
@@ -317,6 +315,8 @@ void CPlayer::Snap(int SnappingClient)
 		return;
 
 	pExPlayerInfo->m_Flags = 0;
+	if (m_Aim)
+		pExPlayerInfo->m_Flags |= EXPLAYERFLAG_AIM;
 	if(m_Afk)
 		pExPlayerInfo->m_Flags |= EXPLAYERFLAG_AFK;
 }
