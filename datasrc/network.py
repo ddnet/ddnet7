@@ -495,6 +495,12 @@ Messages = [
 			NetStringStrict("m_Arguments")
 	]),
 
+	# Can't add any NetMessages here!
+
+	NetMessageEx("Sv_MyOwnMessage", "my-own-message@heinrich5991.de", [
+		NetIntAny("m_Test"),
+	]),
+
 	NetMessageEx("Cl_ExPlayerInfo", "explayerinfo@ddnet.tw", [
 		NetIntAny("m_Flags"),
 	]),
