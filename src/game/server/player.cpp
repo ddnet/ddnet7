@@ -96,6 +96,7 @@ void CPlayer::Reset()
 	m_NinjaJetpack = false;
 
 	m_Paused = PAUSE_NONE;
+	m_DND = false;
 
 	m_LastPause = 0;
 	m_Score = -1;

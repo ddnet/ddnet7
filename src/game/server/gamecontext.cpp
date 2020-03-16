@@ -300,7 +300,16 @@ void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *p
 	Msg.m_TargetID = -1;
 
 	if(Mode == CHAT_ALL)
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	{
+		// send to the clients
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			if(m_apPlayers[i] != 0) {
+				if(!m_apPlayers[i]->m_DND)
+					Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
+			}
+		}
+	}
 	else if(Mode == CHAT_TEAM)
 	{
 		CTeamsCore* Teams = &((CGameControllerDDRace*)m_pController)->m_Teams.m_Core;

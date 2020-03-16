@@ -151,6 +151,7 @@ public:
 		PAUSE_SPEC
 	};
 
+	bool m_DND;
 	int64 m_FirstVoteTick;
 
 	void ProcessPause();
