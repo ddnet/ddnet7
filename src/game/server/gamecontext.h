@@ -312,6 +312,7 @@ private:
 	static void ConPoints(IConsole::IResult* pResult, void* pUserData);
 	static void ConTopPoints(IConsole::IResult* pResult, void* pUserData);
 
+	static void ConDND(IConsole::IResult *pResult, void *pUserData);
 	static void ConMapInfo(IConsole::IResult* pResult, void* pUserData);
 	static void ConSave(IConsole::IResult *pResult, void *pUserData);
 	static void ConLoad(IConsole::IResult *pResult, void *pUserData);
