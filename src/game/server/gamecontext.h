@@ -213,6 +213,7 @@ public:
 	void SendChatCommand(const CCommandManager::CCommand *pCommand, int ClientID);
 	void SendChatCommands(int ClientID);
 	void SendRemoveChatCommand(const CCommandManager::CCommand *pCommand, int ClientID);
+	void SendRemoveChatCommand(const char *pName, int ClientID);
 
 	//
 	void CheckPureTuning();

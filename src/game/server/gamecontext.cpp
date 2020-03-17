@@ -432,6 +432,16 @@ void CGameContext::SendChatCommand(const CCommandManager::CCommand *pCommand, in
 
 void CGameContext::SendChatCommands(int ClientID)
 {
+	// Remove the clientside commands (expect w and whisper)
+	{
+		SendRemoveChatCommand("all", ClientID);
+		SendRemoveChatCommand("friend", ClientID);
+		SendRemoveChatCommand("m", ClientID);
+		SendRemoveChatCommand("mute", ClientID);
+		SendRemoveChatCommand("r", ClientID);
+		SendRemoveChatCommand("team", ClientID);
+	}
+
 	for(int i = 0; i < CommandManager()->CommandCount(); i++)
 	{
 		SendChatCommand(CommandManager()->GetCommand(i), ClientID);
@@ -442,6 +452,14 @@ void CGameContext::SendRemoveChatCommand(const CCommandManager::CCommand *pComma
 {
 	CNetMsg_Sv_CommandInfoRemove Msg;
 	Msg.m_Name = pCommand->m_aName;
+
+	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
+}
+
+void CGameContext::SendRemoveChatCommand(const char *pName, int ClientID)
+{
+	CNetMsg_Sv_CommandInfoRemove Msg;
+	Msg.m_Name = pName;
 
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
 }
