@@ -89,7 +89,7 @@ void CPlayer::Reset()
 
 	GameServer()->Score()->PlayerData(m_ClientID)->Reset();
 
-	m_ClientVersion = VERSION_VANILLA;
+	m_DDraceVersion = VERSION_VANILLA;
 	m_ShowOthers = g_Config.m_SvShowOthersDefault;
 	m_ShowAll = g_Config.m_SvShowAllDefault;
 	m_SpecTeam = false;
