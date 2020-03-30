@@ -369,6 +369,7 @@ private:
 	{
 		NETADDR m_Addr;
 		int m_Expire;
+		char m_aReason[128];
 	};
 	struct CVoteMute
 	{
@@ -377,11 +378,12 @@ private:
 	};
 
 	CMute m_aMutes[MAX_MUTES];
+	
 	int m_NumMutes;
 	CVoteMute m_aVoteMutes[MAX_VOTE_MUTES];
 	int m_NumVoteMutes;
-	bool TryMute(const NETADDR *pAddr, int Secs);
-	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName);
+	bool TryMute(const NETADDR *pAddr, int Secs, const char *pReason);
+	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "No reason given");
 
 public:
 	CLayers* Layers() { return &m_Layers; }
