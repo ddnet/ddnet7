@@ -383,7 +383,7 @@ private:
 	CVoteMute m_aVoteMutes[MAX_VOTE_MUTES];
 	int m_NumVoteMutes;
 	bool TryMute(const NETADDR *pAddr, int Secs, const char *pReason);
-	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "No reason given");
+	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "");
 
 public:
 	CLayers* Layers() { return &m_Layers; }
