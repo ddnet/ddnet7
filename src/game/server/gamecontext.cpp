@@ -763,6 +763,14 @@ void CGameContext::OnTick()
 			m_aVoteMutes[i] = m_aVoteMutes[m_NumVoteMutes];
 		}
 	}
+	for(int i = 0; i < m_NumVoteMutes; i++)
+	{
+		if(m_aVoteMutes[i].m_Expire <= Server()->Tick())
+		{
+			m_NumVoteMutes--;
+			m_aVoteMutes[i] = m_aVoteMutes[m_NumVoteMutes];
+		}
+	}
 
 	if (Server()->Tick() % (g_Config.m_SvAnnouncementInterval * Server()->TickSpeed() * 60) == 0)
 	{
@@ -1208,6 +1216,19 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 
 				pPlayer->m_LastVoteTry = Now;
+			}
+			NETADDR Addr;
+			Server()->GetClientAddr(ClientID, &Addr);
+			int VoteMuted = 0;
+			for(int i = 0; i < m_NumVoteMutes && !VoteMuted; i++)
+				if(!net_addr_comp_noport(&Addr, &m_aVoteMutes[i].m_Addr))
+					VoteMuted = (m_aVoteMutes[i].m_Expire - Server()->Tick()) / Server()->TickSpeed();
+			if(VoteMuted > 0)
+			{
+				char aChatmsg[64];
+				str_format(aChatmsg, sizeof(aChatmsg), "You are not permitted to vote for the next %d seconds.", VoteMuted);
+				SendChatTarget(ClientID, aChatmsg);
+				return;
 			}
 
 			char aChatmsg[512] = {0};

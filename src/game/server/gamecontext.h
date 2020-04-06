@@ -351,6 +351,9 @@ private:
 	static void ConMute(IConsole::IResult* pResult, void* pUserData);
 	static void ConMuteID(IConsole::IResult* pResult, void* pUserData);
 	static void ConMuteIP(IConsole::IResult* pResult, void* pUserData);
+	static void ConVoteMute(IConsole::IResult *pResult, void *pUserData);
+	static void ConVoteUnmute(IConsole::IResult *pResult, void *pUserData);
+	static void ConVoteMutes(IConsole::IResult *pResult, void *pUserData);
 	static void ConUnmute(IConsole::IResult* pResult, void* pUserData);
 	static void ConMutes(IConsole::IResult* pResult, void* pUserData);
 
@@ -383,6 +386,8 @@ private:
 	CVoteMute m_aVoteMutes[MAX_VOTE_MUTES];
 	int m_NumVoteMutes;
 	bool TryMute(const NETADDR *pAddr, int Secs, const char *pReason);
+	bool TryVoteMute(const NETADDR *pAddr, int Secs);
+	bool VoteMute(const NETADDR *pAddr, int Secs, const char *pDisplayName, int AuthedID);
 	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "No reason given");
 
 public:

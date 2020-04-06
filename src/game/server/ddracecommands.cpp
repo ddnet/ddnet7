@@ -305,6 +305,96 @@ void CGameContext::ConTeleport(IConsole::IResult *pResult, void *pUserData)
 	}
 }
 
+bool CGameContext::TryVoteMute(const NETADDR *pAddr, int Secs)
+{
+	// find a matching vote mute for this ip, update expiration time if found
+	for(int i = 0; i < m_NumVoteMutes; i++)
+	{
+		if(net_addr_comp_noport(&m_aVoteMutes[i].m_Addr, pAddr) == 0)
+		{
+			m_aVoteMutes[i].m_Expire = Server()->Tick()
+				+ Secs * Server()->TickSpeed();
+			return true;
+		}
+	}
+
+	// nothing to update create new one
+	if(m_NumVoteMutes < MAX_VOTE_MUTES)
+	{
+		m_aVoteMutes[m_NumVoteMutes].m_Addr = *pAddr;
+		m_aVoteMutes[m_NumVoteMutes].m_Expire = Server()->Tick()
+			+ Secs * Server()->TickSpeed();
+		m_NumVoteMutes++;
+		return true;
+	}
+	// no free slot found
+	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "votemute", "vote mute array is full");
+	return false;
+}
+
+
+bool CGameContext::VoteMute(const NETADDR *pAddr, int Secs, const char *pDisplayName, int AuthedID)
+{
+	if (!TryVoteMute(pAddr, Secs))
+		return false;
+
+	if(!pDisplayName)
+		return true;
+
+	char aBuf[128];
+	str_format(aBuf, sizeof aBuf, "'%s' banned '%s' for %d seconds from voting.",
+		Server()->ClientName(AuthedID), pDisplayName, Secs);
+	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "votemute", aBuf);
+	return true;
+}
+
+bool CGameContext::VoteUnmute(const NETADDR *pAddr, const char *pDisplayName, int AuthedID)
+{
+	for(int i = 0; i < m_NumVoteMutes; i++)
+	{
+		if(net_addr_comp_noport(&m_aVoteMutes[i].m_Addr, pAddr) == 0)
+		{
+			m_NumVoteMutes--;
+			m_aVoteMutes[i] = m_aVoteMutes[m_NumVoteMutes];
+			if(pDisplayName)
+			{
+				char aBuf[128];
+				str_format(aBuf, sizeof aBuf, "'%s' unbanned '%s' from voting.",
+						   Server()->ClientName(AuthedID), pDisplayName);
+				Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "voteunmute", aBuf);
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+void CGameContext::ConVoteMutes(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *) pUserData;
+
+	if (pSelf->m_NumVoteMutes <= 0)
+	{
+		// Just to make sure.
+		pSelf->m_NumVoteMutes = 0;
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "votemutes",
+								"There are no active vote mutes.");
+		return;
+	}
+
+	char aIpBuf[64];
+	char aBuf[128];
+	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "votemutes",
+							"Active vote mutes:");
+	for (int i = 0; i < pSelf->m_NumVoteMutes; i++)
+	{
+		net_addr_str(&pSelf->m_aVoteMutes[i].m_Addr, aIpBuf, sizeof(aIpBuf), false);
+		str_format(aBuf, sizeof aBuf, "%d: \"%s\", %d seconds left", i,
+				aIpBuf, (pSelf->m_aVoteMutes[i].m_Expire - pSelf->Server()->Tick()) / pSelf->Server()->TickSpeed());
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "votemutes", aBuf);
+	}
+}
+
 void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
