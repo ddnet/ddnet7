@@ -421,6 +421,30 @@ void CGameContext::ConVoteMutes(IConsole::IResult *pResult, void *pUserData)
 	}
 }
 
+void CGameContext::ConVoteUnmute(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int Victim = pResult->GetVictim();
+
+	if(Victim < 0 || Victim > MAX_CLIENTS || !pSelf->m_apPlayers[Victim])
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "voteunmute", "Client ID not found");
+		return;
+	}
+
+	NETADDR Addr;
+	pSelf->Server()->GetClientAddr(Victim, &Addr);
+
+	bool Found = pSelf->VoteUnmute(&Addr, pSelf->Server()->ClientName(Victim), pResult->m_ClientID);
+	if(Found)
+	{
+		char aBuf[128];
+		str_format(aBuf, sizeof aBuf, "'%s' unbanned '%s' from voting.",
+				   pSelf->Server()->ClientName(pResult->m_ClientID), pSelf->Server()->ClientName(Victim));
+		pSelf->SendChat(-1, 0, aBuf);
+	}
+}
+
 void CGameContext::ConKill(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *) pUserData;
