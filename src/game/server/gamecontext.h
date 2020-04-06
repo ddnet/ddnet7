@@ -388,6 +388,7 @@ private:
 	bool TryMute(const NETADDR *pAddr, int Secs, const char *pReason);
 	bool TryVoteMute(const NETADDR *pAddr, int Secs);
 	bool VoteMute(const NETADDR *pAddr, int Secs, const char *pDisplayName, int AuthedID);
+	bool VoteUnmute(const NETADDR *pAddr, const char *pDisplayName, int AuthedID);
 	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "No reason given");
 
 public:
