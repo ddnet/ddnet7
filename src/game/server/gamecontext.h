@@ -389,7 +389,7 @@ private:
 	bool TryVoteMute(const NETADDR *pAddr, int Secs);
 	bool VoteMute(const NETADDR *pAddr, int Secs, const char *pDisplayName, int AuthedID);
 	bool VoteUnmute(const NETADDR *pAddr, const char *pDisplayName, int AuthedID);
-	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "No reason given");
+	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "");
 
 public:
 	CLayers* Layers() { return &m_Layers; }
