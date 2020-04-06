@@ -391,7 +391,7 @@ void CGameContext::ConVoteMute(IConsole::IResult *pResult, void *pUserData)
 		char aBuf[128];
 		str_format(aBuf, sizeof aBuf, "'%s' banned '%s' for %d seconds from voting.",
 				   pSelf->Server()->ClientName(pResult->m_ClientID), pSelf->Server()->ClientName(Victim), Seconds);
-		pSelf->SendChat(-1, 0, aBuf);
+		pSelf->SendChat(-1, 0, -1, aBuf, -1);
 	}
 }
 
