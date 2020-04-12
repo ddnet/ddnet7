@@ -1200,6 +1200,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			int64 Now = Server()->Tick();
 			int64 TickSpeed = Server()->TickSpeed();
 
+			if(g_Config.m_SvRconVote && !Server()->GetAuthedState(ClientID))
+			{
+				SendChatTarget(ClientID, "You can only vote after logging in.");
+				return;
+			}
+
 			if (g_Config.m_SvDnsblVote && !m_pServer->DnsblWhite(ClientID))
 			{
 				// blacklisted by dnsbl
