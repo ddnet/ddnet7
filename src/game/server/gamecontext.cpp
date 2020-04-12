@@ -1231,6 +1231,20 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				pPlayer->m_LastVoteTry = Now;
 			}
 
+			NETADDR Addr;
+			Server()->GetClientAddr(ClientID, &Addr);
+			int VoteMuted = 0;
+			for(int i = 0; i < m_NumVoteMutes && !VoteMuted; i++)
+				if(!net_addr_comp_noport(&Addr, &m_aVoteMutes[i].m_Addr))
+					VoteMuted = (m_aVoteMutes[i].m_Expire - Server()->Tick()) / Server()->TickSpeed();
+			if(VoteMuted > 0)
+			{
+				char aChatmsg[64];
+				str_format(aChatmsg, sizeof(aChatmsg), "You are not permitted to vote for the next %d seconds.", VoteMuted);
+				SendChatTarget(ClientID, aChatmsg);
+				return;
+			}
+
 			char aChatmsg[512] = {0};
 			m_VoteType = VOTE_UNKNOWN;
 			char aDesc[VOTE_DESC_LENGTH] = {0};
