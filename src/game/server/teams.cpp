@@ -115,7 +115,7 @@ void CGameTeams::OnCharacterStart(int ClientID)
 			}
 		}
 
-		if(g_Config.m_SvTeam < 3 && g_Config.m_SvTeamMaxSize != 2 && g_Config.m_SvPauseable)
+		if(g_Config.m_SvTeam < 3 && g_Config.m_SvTeamMaxSize != 2 && g_Config.m_SvPauseable && m_MembersCount[m_Core.Team(ClientID)] > 1)
 		{
 			for(int i = 0; i < MAX_CLIENTS; ++i)
 			{
