@@ -669,8 +669,13 @@ void CGameContext::OnTick()
 			// send vote options
 			ProgressVoteOptions(i);
 
-			m_apPlayers[i]->Tick();
-			m_apPlayers[i]->PostTick();
+			// ProgressVoteOptions calls SendMsg which can cause a player to be
+			// kicked on network problems, have to recheck
+			if(m_apPlayers[i])
+			{
+				m_apPlayers[i]->Tick();
+				m_apPlayers[i]->PostTick();
+			}
 		}
 	}
 
