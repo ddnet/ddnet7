@@ -39,7 +39,7 @@ public:
 	virtual int GetClientVersion(int ClientID) const = 0;
 	virtual void RestrictRconOutput(int ClientID) = 0;
 
-	// DDrace
+	// DDRace
 
 	virtual void GetClientAddr(int ClientID, NETADDR* pAddr) = 0;
 	virtual const char* GetAnnouncementLine(char const* FileName) = 0;
@@ -82,6 +82,11 @@ public:
 
 	virtual void DemoRecorder_HandleAutoStart() = 0;
 	virtual bool DemoRecorder_IsRecording() = 0;
+
+	virtual const char *GetNetErrorString(int ClientID) = 0;
+	virtual void ResetNetErrorString(int ClientID) = 0;
+	virtual bool SetTimedOut(int ClientID, int OrigID) = 0;
+	virtual void SetTimeoutProtected(int ClientID) = 0;
 };
 
 class IGameServer : public IInterface

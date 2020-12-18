@@ -339,11 +339,16 @@ public:
 
 	void RestrictRconOutput(int ClientID) { m_RconRestrict = ClientID; }
 
-	// DDrace
+	// DDRace
+
 	void GetClientAddr(int ClientID, NETADDR* pAddr);
 	const char* GetAnnouncementLine(char const* FileName);
 	unsigned m_AnnouncementLastLine;
 
+	const char *GetNetErrorString(int ClientID) { return m_NetServer.ErrorString(ClientID); };
+	void ResetNetErrorString(int ClientID) { m_NetServer.ResetErrorString(ClientID); };
+	bool SetTimedOut(int ClientID, int OrigID);
+	void SetTimeoutProtected(int ClientID) { m_NetServer.SetTimeoutProtected(ClientID); };
 #if defined (CONF_SQL)
 	// console commands for sqlmasters
 	static void ConAddSqlServer(IConsole::IResult *pResult, void *pUserData);

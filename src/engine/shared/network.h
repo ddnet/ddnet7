@@ -309,7 +309,6 @@ private:
 	NETSTATS m_Stats;
 
 	//
-	void Reset();
 	void ResetStats();
 	void SetError(const char *pString);
 	void AckChunks(int Ack);
@@ -323,6 +322,7 @@ private:
 	static TOKEN GenerateToken(const NETADDR *pPeerAddr);
 
 public:
+	void Reset(bool Rejoin=false);
 	void Init(NETSOCKET Socket, bool BlockCloseMsg);
 	int Connect(NETADDR *pAddr);
 	void Disconnect(const char *pReason);
@@ -353,6 +353,14 @@ public:
 	int64 ConnectTime() const { return m_LastUpdateTime; }
 
 	int AckSequence() const { return m_Ack; }
+
+	// DDRace
+
+	int SeqSequence() const { return m_Sequence; }
+	TStaticRingBuffer<CNetChunkResend, NET_CONN_BUFFERSIZE> *ResendBuffer() { return &m_Buffer; };
+	bool m_TimeoutProtected;
+	bool m_TimeoutSituation;
+	void SetTimedOut(const NETADDR *pAddr, int Sequence, int Ack, TOKEN Token, TStaticRingBuffer<CNetChunkResend, NET_CONN_BUFFERSIZE> *pResendBuffer);
 };
 
 class CConsoleNetConnection
@@ -465,6 +473,13 @@ public:
 
 	void SetMaxClients(int MaxClients);
 	void SetMaxClientsPerIP(int MaxClientsPerIP);
+
+	// DDRace
+
+	int ResetErrorString(int ClientID);
+	const char *ErrorString(int ClientID);
+	bool SetTimedOut(int ClientID, int OrigID);
+	void SetTimeoutProtected(int ClientID);
 };
 
 class CNetConsole
