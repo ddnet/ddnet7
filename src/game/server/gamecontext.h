@@ -100,6 +100,7 @@ class CGameContext : public IGameServer
 	static void ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUserData, IConsole::FCommandCallback pfnCallback, void *pCallbackUserData);
 	static void NewCommandHook(const CCommandManager::CCommand *pCommand, void *pContext);
 	static void RemoveCommandHook(const CCommandManager::CCommand *pCommand, void *pContext);
+	static void ConRules(IConsole::IResult *pResult, void *pUserData);
 
 	static void LegacyCommandCallback(IConsole::IResult *pResult, void *pContext);
 	void RegisterLegacyDDRaceCommands();
@@ -349,6 +350,9 @@ private:
 	static void ConRescue(IConsole::IResult* pResult, void* pUserData);
 	static void ConProtectedKill(IConsole::IResult* pResult, void* pUserData);
 
+	static void ConVoteMute(IConsole::IResult *pResult, void *pUserData);
+	static void ConVoteUnmute(IConsole::IResult *pResult, void *pUserData);
+	static void ConVoteMutes(IConsole::IResult *pResult, void *pUserData);
 	static void ConMute(IConsole::IResult* pResult, void* pUserData);
 	static void ConMuteID(IConsole::IResult* pResult, void* pUserData);
 	static void ConMuteIP(IConsole::IResult* pResult, void* pUserData);
@@ -385,6 +389,9 @@ private:
 	int m_NumVoteMutes;
 	bool TryMute(const NETADDR *pAddr, int Secs, const char *pReason);
 	void Mute(const NETADDR *pAddr, int Secs, const char *pDisplayName, const char *pReason = "");
+	bool TryVoteMute(const NETADDR *pAddr, int Secs);
+	bool VoteMute(const NETADDR *pAddr, int Secs, const char *pDisplayName, int AuthedID);
+	bool VoteUnmute(const NETADDR *pAddr, const char *pDisplayName, int AuthedID);
 
 public:
 	CLayers* Layers() { return &m_Layers; }

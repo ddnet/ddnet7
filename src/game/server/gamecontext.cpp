@@ -669,8 +669,13 @@ void CGameContext::OnTick()
 			// send vote options
 			ProgressVoteOptions(i);
 
-			m_apPlayers[i]->Tick();
-			m_apPlayers[i]->PostTick();
+			// ProgressVoteOptions calls SendMsg which can cause a player to be
+			// kicked on network problems, have to recheck
+			if(m_apPlayers[i])
+			{
+				m_apPlayers[i]->Tick();
+				m_apPlayers[i]->PostTick();
+			}
 		}
 	}
 
@@ -1200,6 +1205,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			int64 Now = Server()->Tick();
 			int64 TickSpeed = Server()->TickSpeed();
 
+			if(g_Config.m_SvRconVote && !Server()->GetAuthedState(ClientID))
+			{
+				SendChatTarget(ClientID, "You can only vote after logging in.");
+				return;
+			}
+
 			if (g_Config.m_SvDnsblVote && !m_pServer->DnsblWhite(ClientID))
 			{
 				// blacklisted by dnsbl
@@ -1223,6 +1234,20 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					return;
 
 				pPlayer->m_LastVoteTry = Now;
+			}
+
+			NETADDR Addr;
+			Server()->GetClientAddr(ClientID, &Addr);
+			int VoteMuted = 0;
+			for(int i = 0; i < m_NumVoteMutes && !VoteMuted; i++)
+				if(!net_addr_comp_noport(&Addr, &m_aVoteMutes[i].m_Addr))
+					VoteMuted = (m_aVoteMutes[i].m_Expire - Server()->Tick()) / Server()->TickSpeed();
+			if(VoteMuted > 0)
+			{
+				char aChatmsg[64];
+				str_format(aChatmsg, sizeof(aChatmsg), "You are not permitted to vote for the next %d seconds.", VoteMuted);
+				SendChatTarget(ClientID, aChatmsg);
+				return;
 			}
 
 			char aChatmsg[512] = {0};
@@ -2026,6 +2051,37 @@ void CGameContext::ConRemoveVote(IConsole::IResult *pResult, void *pUserData)
 	pSelf->m_pVoteOptionFirst = pVoteOptionFirst;
 	pSelf->m_pVoteOptionLast = pVoteOptionLast;
 	pSelf->m_NumVoteOptions = NumVoteOptions;
+}
+
+void CGameContext::ConRules(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *) pUserData;
+	bool Printed = false;
+	if (g_Config.m_SvDDRaceRules)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "rules",
+				"Be nice.");
+		Printed = true;
+	}
+	#define _RL(n) g_Config.m_SvRulesLine ## n
+	char *pRuleLines[] = {
+		_RL(1), _RL(2), _RL(3), _RL(4), _RL(5),
+		_RL(6), _RL(7), _RL(8), _RL(9), _RL(10),
+	};
+	for(unsigned i = 0; i < sizeof(pRuleLines) / sizeof(pRuleLines[0]); i++)
+	{
+		if(pRuleLines[i][0])
+		{
+			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD,
+				"rules", pRuleLines[i]);
+			Printed = true;
+		}
+	}
+	if (!Printed)
+	{
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "rules",
+				"No Rules Defined, Kill em all!!");
+	}
 }
 
 void CGameContext::ConClearVotes(IConsole::IResult *pResult, void *pUserData)
